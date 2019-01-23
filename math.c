@@ -49,7 +49,7 @@ void bubble(int *a,int n) //array a and length n
 void bilinear_interp(double *x_vec, double *y_vec, int size_x, int size_y, double x, double y, int *bi_index, double *bi_weight, double resolution){
     //find indices from bilinear interpolation
     //resolution = lat/lon resolution
-    //x=lat, y=lon, index= lon * NLAT + lat;
+    //x=lon, y=lat, index= lat * NLON + lon;
     int ix1,ix2,iy1,iy2;
     double x1,x2,y1,y2;
     //find ix1 and ix2, the two index that are nearest to x

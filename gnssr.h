@@ -50,6 +50,7 @@
 #define OFF 0
 #define ON 1
 #define chipRate_cs 1.023e6 // chips per second
+#define omega0 7.2921158553e-5 //earth rotation in rad/s
 
 #define upsamplingFactor 10  //upsamplingFactor of receiver antenna pattern
 //#define windModelType = 0; //0 for isotropic, 1 for anisotropic

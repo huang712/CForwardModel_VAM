@@ -82,6 +82,7 @@ void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp){
         exit(1);
     }
 
+    double start1, end1;
     //read from data file into memory
     int N = pp->Rx_numData;
     int M = 3; //num fields
@@ -97,7 +98,6 @@ void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp){
         pp->data[i].az_deg  = tempBuffer[2*N+i];
     }
     free(tempBuffer);
-
     fclose(file);
 
 }

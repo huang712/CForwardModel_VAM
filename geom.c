@@ -32,8 +32,9 @@
 #include "gnssr.h"
 
 // prototypes (these functions are only called from within geom.c)
-void getSpecularFrameToOrbitFrameXfrm( double pos[3], double vel[3], double M[9] );
-void getSpecularFrameToAaronOrbitFrameXfrm( double pos[3], double vel[3], double M[9] );
+void getSpecularFrameToOrbitFrameXfrm( double sat_pos[3], double sat_vel[3], double xfrmMatrix[9] );
+void getSpecularFrameToOrbitFrameXfrm_new( double sat_pos[3], double sat_vel[3], double xfrmMatrix[9] );
+void getSpecularFrameToAaronOrbitFrameXfrm( double sat_pos[3], double sat_vel[3], double xfrmMatrix[9] );
 //void getECEF2SpecularFrameXfrm( double rx_pos_ecef[3], double tx_pos_ecef[3],
 //                                double sx_pos_ecef[3], double M[9] );
 void geom_writeGeomTableFile( geometryData *gd );
@@ -191,7 +192,7 @@ void geom_calculateSecondaryGeometry( orbitGeometryStruct *g ){
     g->sx_angle_rad = acos(-vector_dot_product(TSx_unit,RSx_unit))/2;
 
     // calculate Rx and Tx orbit frames transforms (as defined by Andrew)
-    getSpecularFrameToOrbitFrameXfrm( g->rx_pos, g->rx_vel, g->SPEC_TO_RX_ORB_FRAME );	//
+    getSpecularFrameToOrbitFrameXfrm_new( g->rx_pos, g->rx_vel, g->SPEC_TO_RX_ORB_FRAME );	//
     getSpecularFrameToOrbitFrameXfrm( g->tx_pos, g->tx_vel, g->SPEC_TO_TX_ORB_FRAME );
 
     // calculate the Rx orbit frame transforms ( as used by Aaron )
@@ -302,6 +303,31 @@ void getSpecularFrameToOrbitFrameXfrm( double sat_pos[3], double sat_vel[3],
     vector_scale(sat_pos, tempz, -1);
     vector_orthoNorm(tempx, tempz);
     vector_cross_product(tempz, tempx, tempy);
+    matrix_form3x3(tempx, tempy, tempz, xfrmMatrix);
+}
+
+void getSpecularFrameToOrbitFrameXfrm_new( double sat_pos[3], double sat_vel[3],
+                                           double xfrmMatrix[9] ){
+    //Matrix for column vector [x1;y1;z1]=M*[x0;y0;z0];
+    // this transform defines the orbit frame of a satellite (Rx or Tx)
+    // Write by Feixiong; accounting for Earth rotation according to the TDS1 doc
+    // y-hat is negative orbit normal
+    // z-hat is towards to the center of earth
+    // x-hat is along-track by right hand system
+
+    double temp[3],tempx[3],tempy[3],tempz[3];
+    double sat_vel_inertial[3];
+    double we[3]={0,0,omega0};  //earth rotation vector
+
+    vector_cross_product(we,sat_pos,temp);
+    vector_add(sat_vel,temp,sat_vel_inertial); //inertial velocity
+
+    vector_cross_product(sat_pos,sat_vel_inertial,temp);
+    vector_scale(temp,tempy,-1/vector_norm(temp)); //tempy
+
+    vector_scale(sat_pos,tempz,-1/vector_norm(sat_pos)); //tempz
+    vector_cross_product(tempy, tempz, tempx);
+
     matrix_form3x3(tempx, tempy, tempz, xfrmMatrix);
 }
 

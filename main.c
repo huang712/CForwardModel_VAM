@@ -14,20 +14,44 @@ void FiniteDiff(char windFilename[], char HWRFtype[], char L1dataFilename[], int
 int main() {
     //Irma ddmIndex=0, 80928-81111, eye = 81095
     //char windFilename[1000] = "../../Data/Irma2017/irma11l.2017090418.hwrfprs.synoptic.0p125.f005.uv.nc";
-    char windFilename[1000] = "/users/fax/CYGNSS/VAM/MATLAB/uv_input.dat"; //"../../MATLAB/uv_ana.dat"
-    char L1dataFilename[1000] = "../../Data/Irma2017/cyg04.ddmi.s20170904-000000-e20170904-235959.l1.power-brcs.a21.d21.nc";
+    //char windFilename[1000] = "/users/fax/CYGNSS/VAM/MATLAB/uv_input.dat"; //"../../MATLAB/uv_ana.dat"
+    //char L1dataFilename[1000] = "../../Data/Irma2017/cyg04.ddmi.s20170904-000000-e20170904-235959.l1.power-brcs.a21.d21.nc";
     //char L1dataFilename[1000] = "../../Data/Irma2017/cyg04.ddmi.s20170904-000000-e20170904-235959.l1.power-brcs.sand031.nc";
 
     //Process_DDM(windFilename, "synoptic", L1dataFilename, 81096, 0, 0);
     //FiniteDiff(windFilename, "synoptic", L1dataFilename, 81096, 0, 0);
 
+    //read path and index from a txt file
+    char windFilename[100],L1dataFilename[100],str3[100];
+    FILE *fp;
+    int index, len;
+    char* filename = "config.txt";
+    //char* filename = "config.txt";
+    fp = fopen(filename, "r");
+    if (fp == NULL){
+        printf("Could not open file %s",filename);
+        return 1;
+    }
+
+    fgets(windFilename, 100, fp);
+    fgets(L1dataFilename, 100, fp);
+    fgets(str3, 100, fp);
+    len = strlen(windFilename);
+    windFilename[len-1] = '\0';
+    len = strlen(L1dataFilename);
+    L1dataFilename[len-1] = '\0';
+    len = strlen(str3);
+    str3[len-1] = '\0';
+    index=atoi(str3);
+
     int ddmIndex=0; //ddm channel 0-3
     int pathType=2; //0 for save in current directory; 1 for save in folders; 2 for in VAM folder
     //char HWRFtype[100]="synoptic";
     char HWRFtype[100]="data";  //data or synoptic
-    for (int index = 81095; index < 81096; index++){   //80928-81111
-       Process_DDM(windFilename,HWRFtype, L1dataFilename, index, ddmIndex, pathType);
-    }
+
+    //for (int index = 81095; index < 81096; index++){   //80928-81111
+    Process_DDM(windFilename,HWRFtype, L1dataFilename, index, ddmIndex, pathType);
+    //}
 
     /////////////////////
     //Gita ddmIndex=2 50571-50730, eye = 50640
@@ -62,8 +86,13 @@ int main() {
 
 void Process_DDM(char windFilename[], char HWRFtype[], char L1dataFilename[], int sampleIndex, int ddmIndex, int pathType){
     struct CYGNSSL1 l1data;
+    double start1, end1;
     readL1data(L1dataFilename, sampleIndex, ddmIndex, &l1data);
-    if(l1data.quality_flags != 0) return; //skip data of quality issue
+
+    if(l1data.quality_flags != 0){
+        printf("Quality flags is not 0\n");
+        return; //skip data of quality issue
+    }
 
     printf("sampleIndex = %d, quality_flags = %d\n", sampleIndex, l1data.quality_flags);
     printf("GPS PRN = %d\n", l1data.prn_code);
@@ -84,13 +113,19 @@ void Process_DDM(char windFilename[], char HWRFtype[], char L1dataFilename[], in
     printf("Initialize input/output structure...\n");
 
     init_metadata(l1data, &meta);
-    init_powerParm(l1data, &pp);
+    start1 = clock();
+    init_powerParm(l1data, &pp);  //cost time
+    end1 =clock();
     if(strcmp(HWRFtype,"core") == 0) init_inputWindField_core(windFilename, &iwf);
     else if(strcmp(HWRFtype,"synoptic") == 0) init_inputWindField_synoptic(windFilename, &iwf);
     else if(strcmp(HWRFtype,"data") == 0) init_inputWindField_data(windFilename, &iwf);
+
     init_Geometry(l1data, &geom);
     init_DDM(l1data, &ddm_fm);
     init_Jacobian(&jacob);
+
+    //printf("Initialization running time: %f seconds\n", (end1-start1)/CLOCKS_PER_SEC);
+
 
     double start, end;
     start = clock();
