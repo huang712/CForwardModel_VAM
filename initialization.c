@@ -104,6 +104,7 @@ void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp){
 void init_inputWindField_data(char dataFileName[], struct inputWindField *iwf){
     //read wind field from a data file
     //lon: 0-360
+    //they are hard coded now
     printf("read wind from data\n");
     iwf->numPtsLon=41;
     iwf->numPtsLat=41;
@@ -347,15 +348,17 @@ void init_Jacobian(struct Jacobian *jacob){
 
 char* getRxAntenna(int sc_num, int ddm_ant){
     char *filename;
+    //char prefix[]="/Data/All_E2ES_antennas/V6";  //must return a pointer, but pointer cannot connect by strcat
     switch(sc_num){
+
         case 1:
             switch(ddm_ant){
                 case 0:
                     printf("No antenna\n");break;
                 case 2:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx1_starboard_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx1_starboard_E2ES_v6.bin"; break;
                 case 3:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx1_port_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx1_port_E2ES_v6.bin"; break;
             }
             break;
         case 2:
@@ -363,9 +366,9 @@ char* getRxAntenna(int sc_num, int ddm_ant){
                 case 0:
                     printf("No antenna\n");break;
                 case 2:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx2_starboard_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx2_starboard_E2ES_v6.bin"; break;
                 case 3:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx2_port_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx2_port_E2ES_v6.bin"; break;
             }
             break;
         case 3:
@@ -373,29 +376,32 @@ char* getRxAntenna(int sc_num, int ddm_ant){
                 case 0:
                     printf("No antenna\n");break;
                 case 2:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx3_starboard_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx3_starboard_E2ES_v6.bin"; break;
                 case 3:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx3_port_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx3_port_E2ES_v6.bin"; break;
             }
             break;
+
         case 4:
             switch(ddm_ant){
                 case 0:
                     printf("No antenna\n");break;
                 case 2:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx4_starboard_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx4_starboard_E2ES_v6.bin"; break;
                 case 3:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx4_port_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx4_port_E2ES_v6.bin"; break;
+
             }
             break;
+
         case 5:
             switch(ddm_ant){
                 case 0:
                     printf("No antenna\n");break;
                 case 2:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx5_starboard_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx5_starboard_E2ES_v6.bin"; break;
                 case 3:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx5_port_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx5_port_E2ES_v6.bin"; break;
             }
             break;
         case 6:
@@ -403,9 +409,9 @@ char* getRxAntenna(int sc_num, int ddm_ant){
                 case 0:
                     printf("No antenna\n");break;
                 case 2:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx6_starboard_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx6_starboard_E2ES_v6.bin"; break;
                 case 3:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx6_port_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx6_port_E2ES_v6.bin"; break;
             }
             break;
         case 7:
@@ -413,9 +419,9 @@ char* getRxAntenna(int sc_num, int ddm_ant){
                 case 0:
                     printf("No antenna\n");break;
                 case 2:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx7_starboard_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx7_starboard_E2ES_v6.bin"; break;
                 case 3:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx7_port_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx7_port_E2ES_v6.bin"; break;
             }
             break;
         case 8:
@@ -423,11 +429,12 @@ char* getRxAntenna(int sc_num, int ddm_ant){
                 case 0:
                     printf("No antenna\n");break;
                 case 2:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx8_starboard_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx8_starboard_E2ES_v6.bin"; break;
                 case 3:
-                    filename = "../../Data/All_E2ES_antennas/V6/Rx8_port_E2ES_v6.bin"; break;
+                    filename = "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx8_port_E2ES_v6.bin"; break;
             }
             break;
+
     }
 
     return filename;

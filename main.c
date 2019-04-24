@@ -11,7 +11,7 @@ double find_opt_delayshift(char L1dataFilename[], int sampleIndex, int ddmIndex)
 
 void FiniteDiff(char windFilename[], char HWRFtype[], char L1dataFilename[], int sampleIndex, int ddmIndex, int pathType);
 
-int main() {
+int main(int argc, char *argv[]) {
     //Irma ddmIndex=0, 80928-81111, eye = 81095
     //char windFilename[1000] = "../../Data/Irma2017/irma11l.2017090418.hwrfprs.synoptic.0p125.f005.uv.nc";
     //char windFilename[1000] = "/users/fax/CYGNSS/VAM/MATLAB/uv_input.dat"; //"../../MATLAB/uv_ana.dat"
@@ -22,19 +22,17 @@ int main() {
     //FiniteDiff(windFilename, "synoptic", L1dataFilename, 81096, 0, 0);
 
     //read path and index from a txt file
-    char windFilename[100],L1dataFilename[100],str3[100];
+    char windFilename[1000],L1dataFilename[1000],str3[100];
     FILE *fp;
     int index, len;
-    char* filename = "config.txt";
-    //char* filename = "config.txt";
-    fp = fopen(filename, "r");
+    fp = fopen(argv[1], "r"); // argv[1] is the config file name
     if (fp == NULL){
-        printf("Could not open file %s",filename);
+        printf("Could not open file %s",argv[1]);
         return 1;
     }
 
-    fgets(windFilename, 100, fp);
-    fgets(L1dataFilename, 100, fp);
+    fgets(windFilename, 1000, fp);
+    fgets(L1dataFilename, 1000, fp);
     fgets(str3, 100, fp);
     len = strlen(windFilename);
     windFilename[len-1] = '\0';
