@@ -20,7 +20,7 @@ void DDMfm_saveToFile(struct DDMfm ddm_fm, int index, int pathType) {
             outp = fopen(filename, "wb");
             break;
         case 2:
-            outp = fopen("/users/fax/CYGNSS/VAM/MATLAB/DDMfm.dat","wb");
+            outp = fopen("/users/fax/CYGNSS/VAM/VAM_MATLAB/DDMfm.dat","wb");
             break;
     }
 
@@ -47,7 +47,7 @@ void Jacobian_saveToFile(struct Jacobian jacob, int index, int pathType){
             printf('save Jacobian not available\n');
             break;
         case 2:
-            outp = fopen("/users/fax/CYGNSS/VAM/MATLAB/Jacobian.dat", "wb");
+            outp = fopen("/users/fax/CYGNSS/VAM/VAM_MATLAB/Jacobian.dat", "wb");
             //outp1 = fopen("/users/fax/CYGNSS/VAM/MATLAB/Jacobian_lat.dat", "wb");
             //outp2 = fopen("/users/fax/CYGNSS/VAM/MATLAB/Jacobian_lon.dat", "wb");
             break;
@@ -78,15 +78,18 @@ void Jacobian_saveToFile(struct Jacobian jacob, int index, int pathType){
 }
 
 
-void PtsVec_saveToFile(struct Jacobian jacob) {
-    FILE *outp = fopen("PtsVec.dat", "wb");
-    double temp;
-    for (int j = 0; j < jacob.numPts_LL; j++) {
-        temp = (double)jacob.Pts_ind_vec[j];
-        fwrite(&temp, sizeof(double), 1, outp);
-        fwrite(&jacob.Pts_lat_vec[j], sizeof(double), 1, outp);
-        fwrite(&jacob.Pts_lon_vec[j], sizeof(double), 1, outp);
-    }
+void indexLL_saveToFile(struct Jacobian jacob) {
+    //FILE *outp = fopen("PtsVec.dat", "wb");
+    FILE *outp = fopen("/users/fax/CYGNSS/VAM/VAM_MATLAB/indexLL.dat", "wb");
+    fwrite(jacob.Pts_ind_vec, sizeof(int), jacob.numPts_LL, outp);
+//    double temp;
+//    for (int j = 0; j < jacob.numPts_LL; j++) {
+//        temp = (double)jacob.Pts_ind_vec[j];
+//        //fwrite(&temp, sizeof(double), 1, outp);
+//        //fwrite(&jacob.Pts_lat_vec[j], sizeof(double), 1, outp);
+//        //fwrite(&jacob.Pts_lon_vec[j], sizeof(double), 1, outp);
+//    }
     fclose(outp);
-    printf("save Points vector in LL from Jacobian into file\n");
+    //printf("save Points vector in LL from Jacobian into file\n");
+    printf("save index of points in LL into file\n");
 }

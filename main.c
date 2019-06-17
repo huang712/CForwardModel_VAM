@@ -1,3 +1,6 @@
+// Forward model for DDM assimilation
+// Will CYGNSS data and wind field data file to produce a simualted DDM and a Jacobian matrix
+
 #include <math.h>
 #include <time.h>
 #include <string.h>
@@ -8,77 +11,112 @@ void Process_DDM(char windFilename[], char HWRFtype[], char L1dataFilename[], in
 double DDM_binshift_corr(char L1dataFilename[], int sampleIndex, int ddmIndex, double shift);
 double corr2(double *A, double *B, int n);
 double find_opt_delayshift(char L1dataFilename[], int sampleIndex, int ddmIndex);
-
 void FiniteDiff(char windFilename[], char HWRFtype[], char L1dataFilename[], int sampleIndex, int ddmIndex, int pathType);
 
 int main(int argc, char *argv[]) {
-    //Irma ddmIndex=0, 80928-81111, eye = 81095
-    //char windFilename[1000] = "../../Data/Irma2017/irma11l.2017090418.hwrfprs.synoptic.0p125.f005.uv.nc";
-    //char windFilename[1000] = "/users/fax/CYGNSS/VAM/MATLAB/uv_input.dat"; //"../../MATLAB/uv_ana.dat"
-    //char L1dataFilename[1000] = "../../Data/Irma2017/cyg04.ddmi.s20170904-000000-e20170904-235959.l1.power-brcs.a21.d21.nc";
-    //char L1dataFilename[1000] = "../../Data/Irma2017/cyg04.ddmi.s20170904-000000-e20170904-235959.l1.power-brcs.sand031.nc";
+    double start, end;
+    start = clock();
 
-    //Process_DDM(windFilename, "synoptic", L1dataFilename, 81096, 0, 0);
-    //FiniteDiff(windFilename, "synoptic", L1dataFilename, 81096, 0, 0);
-
-    //read path and index from a txt file
-    char windFilename[1000],L1dataFilename[1000],str3[100];
+    //read file path, index from a config file (txt)
+    char windFilename[1000],L1dataFilename[1000],str[100], a[10];
     FILE *fp;
-    int index, len;
+    int len;
+    int sampleIndex; //zero based
+    int ddmIndex; //ddm channel 0-3
+    struct windInfo info;
     fp = fopen(argv[1], "r"); // argv[1] is the config file name
     if (fp == NULL){
         printf("Could not open file %s",argv[1]);
         return 1;
     }
 
-    fgets(windFilename, 1000, fp);
-    fgets(L1dataFilename, 1000, fp);
-    fgets(str3, 100, fp);
-    len = strlen(windFilename);
-    windFilename[len-1] = '\0';
-    len = strlen(L1dataFilename);
-    L1dataFilename[len-1] = '\0';
-    len = strlen(str3);
-    str3[len-1] = '\0';
-    index=atoi(str3);
+    fgets(windFilename, 1000, fp); //read first line (wind file name)
+    fgets(L1dataFilename, 1000, fp); //read second line (CYGNSS file name)
+    len = strlen(windFilename); windFilename[len-1] = '\0';  //add '\0' at the end of filename which means the end of the string
+    len = strlen(L1dataFilename); L1dataFilename[len-1] = '\0';
 
-    int ddmIndex=0; //ddm channel 0-3
+    fgets(str, 100, fp); //read 3th line (DDM index) zeros based 0 - 3
+    ddmIndex = atoi(strncpy(a, str+14, 1));
+    fgets(str, 100, fp); //read 4th line (CYGNSS index)
+    sampleIndex = atoi(strncpy(a, str+14, 5));
+    fgets(str, 100, fp); //read 5th line
+    info.numPtsLon = atoi(strncpy(a, str+14, 5));
+    fgets(str, 100, fp); //read 6th line
+    info.numPtsLat = atoi(strncpy(a, str+14, 5));
+    fgets(str, 100, fp); //read 7th line
+    info.lon_min_deg = atof(strncpy(a, str+14, 10));
+    fgets(str, 100, fp); //read 8th line
+    info.lat_min_deg = atof(strncpy(a, str+14, 10));
+    fgets(str, 100, fp); //read 9th line
+    info.resolution = atof(strncpy(a, str+14, 10));
+
+    info.lon_max_deg = info.lon_min_deg + info.resolution * (info.numPtsLon-1);
+    info.lat_max_deg = info.lat_min_deg + info.resolution * (info.numPtsLat-1);
+
+    //Initilization -----------------------------------------------------------------------------------------------------------------------
     int pathType=2; //0 for save in current directory; 1 for save in folders; 2 for in VAM folder
-    //char HWRFtype[100]="synoptic";
     char HWRFtype[100]="data";  //data or synoptic
 
-    //for (int index = 81095; index < 81096; index++){   //80928-81111
-    Process_DDM(windFilename,HWRFtype, L1dataFilename, index, ddmIndex, pathType);
-    //}
-
-    /////////////////////
-    //Gita ddmIndex=2 50571-50730, eye = 50640
-    //char windFilename[1000] = "../../Data/Gita2018/gita09p.2018021212.hwrfprs.synoptic.0p125.f002.uv.nc";
-    //char windFilename[1000] = "../../Data/Gita2018/gita09p.2018021212.hwrfprs.core.0p02.f002.uv.nc";
-    //char L1dataFilename[1000] = "../../Data/Gita2018/cyg01.ddmi.s20180212-000000-e20180212-235959.l1.power-brcs.a20.d20.nc";
-    //char L1dataFilename[1000] = "../../Data/Gita2018/cyg01.ddmi.s20180212-000000-e20180212-235959.l1.power-brcs.sand031.nc";
-
-    //Process_DDM(windFilename, "synoptic", L1dataFilename, 50640, 2, 0);
-
-    //for (int index = 50571; index < 50730; index++){   //80981-81111
-    //    Process_DDM(windFilename,"synoptic", L1dataFilename, index, 2, 1);
-    //}
-    ////////////////////////
+    struct CYGNSSL1 l1data;
+    readL1data(L1dataFilename, sampleIndex, ddmIndex, &l1data);  //read L1 data into the structure l1data
 
     /*
-    double shift, f_index;  // calculate optimal delay bin shift
-    int k = 0;
-    FILE *outp = fopen("Delayshift.dat","ab+");;
-    for (int index = 50720; index < 50730; index++){  //80981-81111    50571-50730
-        printf("index = %d\n",index);
-        shift=find_opt_delayshift(L1dataFilename, index, 2);
-        f_index = (double)index;
-        fwrite(&f_index, 1, sizeof(double), outp);
-        fwrite(&shift, 1, sizeof(double), outp);
-        k++;
-    }
-    fclose(outp);
+    //quality flag should be checked before running the forward model
+    //if(l1data.quality_flags != 0){
+    //    printf("Quality flags is not 0\n");
+    //    return 0; //skip data of quality issue
+    //}
     */
+    printf("ddmIndex = %d, sampleIndex = %d, quality_flags = %d\n", ddmIndex, sampleIndex, l1data.quality_flags);
+    printf("GPS PRN = %d\n", l1data.prn_code);
+    printf("sp delay row = %f, sp doppler col = %f\n", l1data.ddm_sp_delay_row,l1data.ddm_sp_dopp_col);
+    printf("sp lat = %f, lon = %f\n",l1data.sp_lat,l1data.sp_lon);
+    printf("ant = %d\n",l1data.ddm_ant);
+
+    struct metadata meta;
+    struct powerParm pp;
+    struct inputWindField iwf;
+    struct Geometry geom;
+    struct DDMfm ddm_fm;
+    struct Jacobian jacob;
+
+    printf("\n");
+    printf("Initialize input/output structure...\n");
+
+
+    if(strcmp(HWRFtype,"core") == 0) init_inputWindField_core(windFilename, &iwf);
+    else if(strcmp(HWRFtype,"synoptic") == 0) init_inputWindField_synoptic(windFilename, &iwf);
+    else if(strcmp(HWRFtype,"data") == 0){
+        init_inputWindField_data(windFilename, &iwf, info);
+    }
+
+    init_metadata(l1data, &meta);
+    init_powerParm(l1data, &pp);  //cost time ~ 0.3s
+    init_Geometry(l1data, &geom);
+    init_DDM(l1data, &ddm_fm);
+    init_Jacobian(&jacob);
+
+    //Run forward model ---------------------------------------------------------------------------------------------------------------
+    forwardModel(meta, pp, iwf, geom, &ddm_fm, &jacob,1);
+
+    printf("ddm 50= %e\n",ddm_fm.data[92].power);
+    printf("H = %e\n",jacob.data[4912].value);
+
+    //Save simulated DDM and Jacobian -------------------------------------------------------------------------------------------------
+    //DDMobs_saveToFile(l1data, sampleIndex,pathType);
+    DDMfm_saveToFile(ddm_fm, sampleIndex,pathType);
+    Jacobian_saveToFile(jacob, sampleIndex, pathType);
+    indexLL_saveToFile(jacob);
+
+    free(pp.data);
+    free(iwf.data);
+    free(ddm_fm.data);
+    free(jacob.data);
+
+    printf("END\n");
+    printf("\n");
+    end =clock();
+    printf("Forward model running time: %f seconds\n", (end-start)/CLOCKS_PER_SEC);
     return 0;
 }
 
@@ -107,6 +145,7 @@ void Process_DDM(char windFilename[], char HWRFtype[], char L1dataFilename[], in
     struct DDMfm ddm_fm;
     struct Jacobian jacob;
 
+
     printf("\n");
     printf("Initialize input/output structure...\n");
 
@@ -116,7 +155,7 @@ void Process_DDM(char windFilename[], char HWRFtype[], char L1dataFilename[], in
     end1 =clock();
     if(strcmp(HWRFtype,"core") == 0) init_inputWindField_core(windFilename, &iwf);
     else if(strcmp(HWRFtype,"synoptic") == 0) init_inputWindField_synoptic(windFilename, &iwf);
-    else if(strcmp(HWRFtype,"data") == 0) init_inputWindField_data(windFilename, &iwf);
+    //else if(strcmp(HWRFtype,"data") == 0) init_inputWindField_data(windFilename, &iwf,info);
 
     init_Geometry(l1data, &geom);
     init_DDM(l1data, &ddm_fm);
@@ -134,7 +173,6 @@ void Process_DDM(char windFilename[], char HWRFtype[], char L1dataFilename[], in
 
     printf("ddm 50= %e\n",ddm_fm.data[50].power);
     printf("H = %e\n",jacob.data[4912].value);
-
 
     //DDMobs_saveToFile(l1data, sampleIndex,pathType);
     DDMfm_saveToFile(ddm_fm, sampleIndex,pathType);

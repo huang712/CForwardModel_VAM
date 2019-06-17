@@ -38,7 +38,7 @@ void init_metadata(struct CYGNSSL1 l1data, struct metadata *meta) {
     meta->excess_noisefloor_dB = 0;
 
     meta->grid_resolution_m = 1000;
-    meta->numGridPoints[0] = 120;
+    meta->numGridPoints[0] = 120; // this must be 120 x 120 km for incidence angle = 60 deg.
     meta->numGridPoints[1] = 120;
     meta->surfaceCurvatureType = 1;//1 = spherical, 2 = flat
 
@@ -101,20 +101,20 @@ void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp){
     fclose(file);
 
 }
-void init_inputWindField_data(char dataFileName[], struct inputWindField *iwf){
+void init_inputWindField_data(char dataFileName[], struct inputWindField *iwf, struct windInfo info){
     //read wind field from a data file
     //lon: 0-360
     //they are hard coded now
     printf("read wind from data\n");
-    iwf->numPtsLon=41;
-    iwf->numPtsLat=41;
+    iwf->numPtsLon=info.numPtsLon;
+    iwf->numPtsLat=info.numPtsLat;
     iwf->numPts=iwf->numPtsLon*iwf->numPtsLat;
-    iwf->lat_min_deg = 14;
-    iwf->lat_max_deg = 19;
-    iwf->lon_min_deg = 302.1;
-    iwf->lon_max_deg = 307.1;
-    iwf->resolution_lat_deg = 0.125; ////sometimes this is -0.02
-    iwf->resolution_lon_deg = 0.125;
+    iwf->lat_min_deg = info.lat_min_deg;
+    iwf->lat_max_deg = info.lat_max_deg;
+    iwf->lon_min_deg = info.lon_min_deg;
+    iwf->lon_max_deg = info.lon_max_deg;
+    iwf->resolution_lat_deg = info.resolution;
+    iwf->resolution_lon_deg = info.resolution;
     iwf->data = (struct inputWindFieldPixel *)calloc(iwf->numPts,sizeof(struct inputWindFieldPixel));
     FILE *file;
     file = fopen(dataFileName,"rb");
@@ -143,6 +143,7 @@ void init_inputWindField_data(char dataFileName[], struct inputWindField *iwf){
     free(windData);
     fclose(file);
 }
+
 void init_inputWindField_core(char windFileName[], struct inputWindField *iwf){
     printf("read wind field file\n");
     int ncid;

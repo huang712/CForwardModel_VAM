@@ -147,12 +147,7 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
     int numSurfacePt1 = meta.numGridPoints[0] * meta.numGridPoints[1]; //14400  num point in 1 km resolution
     int numSurfacePt10 = (int)(numSurfacePt1/100); //144  num point in 10 km resolution
 
-    //double **H0; //2D array numBins * numSurfacePt 187x144
-    //H0 = (double**)malloc(sizeof(double*) * numBins);//
-    //for (i = 0; i < numBins; i++){//
-    //    H0[i] = (double*)malloc(sizeof(double)*numSurfacePt10);
-    //}
-    //memset(H0,0, sizeof(H0));
+    //H0: 2D array numBins * numSurfacePt 187x144
     double **H0 = (double **)calloc(numBins, sizeof(double *));
     for (i = 0; i < numBins; i++){//
         H0[i] = (double *)calloc(numSurfacePt10,sizeof(double));
@@ -163,7 +158,6 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
 
     int i0=0; //index of ddmbin
     int j0=0; //index of surfacePts
-    //int lat_index, lon_index;
     for(int m = 0 ; m < surface.numGridPtsX/10 ; m = m + 1)
     {
         for(int n = 0 ; n < surface.numGridPtsY/10 ; n = n + 1)
@@ -234,12 +228,12 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
     }
     free(a);
 
-    int save_indexLL=1;
-    if(save_indexLL==1){
-        FILE *outp = fopen("/users/fax/CYGNSS/VAM/MATLAB/indexLL.dat", "wb");
-        fwrite(indexLL, sizeof(int), numPt_LL, outp);
-        fclose(outp);
-    }
+//    int save_indexLL=1;
+//    if(save_indexLL==1){
+//        FILE *outp = fopen("/users/fax/CYGNSS/VAM/VAM_MATLAB/indexLL.dat", "wb");
+//        fwrite(indexLL, sizeof(int), numPt_LL, outp);
+//        fclose(outp);
+//    }
 
     //construct M matrix M: 14400 x K
     double **M; // T[14400][K] interpolation transformation matrix: fill it with bi_weight[14400][4]
@@ -313,8 +307,6 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
         }
     }
 
-
-
     //printf("%d %d %d %d\n", bi_index[0][0],bi_index[0][1],bi_index[0][2],bi_index[0][3]);
     //printf("%f %f %f %f\n", bi_weight[0][0],bi_weight[0][1],bi_weight[0][2],bi_weight[0][3]);
     //printf("%d %d %d %d\n", indexLL[0],indexLL[1],indexLL[2],indexLL[3]);
@@ -370,6 +362,7 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
     jacob->numDDMbins = numBins;
     jacob->numPts_LL = numPt_LL;
 
+    //save indexLL into jacob
     for(i = 0; i< numPt_LL; i++){
         jacob->Pts_lat_vec[i] = iwf.data[indexLL[i]].lat_deg;
         jacob->Pts_lon_vec[i] = iwf.data[indexLL[i]].lon_deg;
@@ -817,7 +810,7 @@ void ddm_initACF(void){
     //added by Feixiong
     // load PRN ACF matrix
     FILE *file;
-    char *ACF_filename = "../../Data/PRN_ACF.bin";
+    char *ACF_filename = "/users/fax/CYGNSS/Data/PRN_ACF.bin";
     file = fopen(ACF_filename,"rb");
     if (file == NULL){
         printf("fail to open PRN ACF file\n");

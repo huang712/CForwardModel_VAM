@@ -9,6 +9,13 @@
 #include <stdlib.h>
 #include "cygnss.h"
 
+struct windInfo  // information of wind field in the data from the config file
+{
+    int numPtsLat, numPtsLon;
+    double lat_min_deg, lat_max_deg, lon_min_deg, lon_max_deg;
+    double resolution;
+};
+
 struct metadata
 {
     //high resolution DDM
@@ -138,7 +145,7 @@ void init_metadata(struct CYGNSSL1 l1data, struct metadata *meta);
 void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp);
 void init_inputWindField_core(char windFileName[], struct inputWindField *iwf);
 void init_inputWindField_synoptic(char windFileName[], struct inputWindField *iwf);
-void init_inputWindField_data(char dataName[], struct inputWindField *iwf);
+void init_inputWindField_data(char dataName[], struct inputWindField *iwf, struct windInfo);
 void init_Geometry(struct CYGNSSL1 l1data, struct Geometry *geom);
 void init_DDM(struct CYGNSSL1 l1data, struct DDMfm *ddm_fm);
 void init_Jacobian(struct Jacobian *jacob);
@@ -147,7 +154,7 @@ char* getRxAntenna(int sc_num, int ddm_ant);
 //saveFile.c : file saving functions (for debug)
 void DDMfm_saveToFile(struct DDMfm ddm_fm, int index, int pathType);
 void Jacobian_saveToFile(struct Jacobian jacob, int index, int pathType);
-void PtsVec_saveToFile(struct Jacobian jacob);
+void indexLL_saveToFile(struct Jacobian jacob);
 
 #endif //CFORWARDMODEL_INPUTOUPUT_H
 
