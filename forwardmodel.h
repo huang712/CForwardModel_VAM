@@ -123,9 +123,9 @@ struct Jacobian
 {
     int numDDMbins;
     int numPts_LL;
-    double Pts_lat_vec[144]; //long enough to larger than numPts_LL
-    double Pts_lon_vec[144];
-    int Pts_ind_vec[144];
+    double Pts_lat_vec[200]; //long enough to larger than numPts_LL
+    double Pts_lon_vec[200];
+    int Pts_ind_vec[200];
     struct JacobianPixel *data; //structure in structure
 };
 
@@ -152,9 +152,9 @@ void init_Jacobian(struct Jacobian *jacob);
 char* getRxAntenna(int sc_num, int ddm_ant);
 
 //saveFile.c : file saving functions (for debug)
-void DDMfm_saveToFile(struct DDMfm ddm_fm, int index, int pathType);
-void Jacobian_saveToFile(struct Jacobian jacob, int index, int pathType);
-void indexLL_saveToFile(struct Jacobian jacob);
+void DDMfm_saveToFile(struct DDMfm ddm_fm, int index, int pathType, char saveDir[1000]);
+void Jacobian_saveToFile(struct Jacobian jacob, int index, int pathType, char saveDir[1000]);
+void indexLL_saveToFile(struct Jacobian jacob, char saveDir[1000]);
 
 #endif //CFORWARDMODEL_INPUTOUPUT_H
 

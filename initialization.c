@@ -329,7 +329,7 @@ void init_DDM(struct CYGNSSL1 l1data, struct DDMfm *ddm_fm){
 
 void init_Jacobian(struct Jacobian *jacob){
     jacob->numDDMbins = 187;
-    jacob->numPts_LL = 144; //initialize it large enough 100-120
+    jacob->numPts_LL = 200; //make it larger
 
     int numBin = jacob->numDDMbins * jacob->numPts_LL;
     jacob->data = (struct JacobianPixel *)calloc(numBin,sizeof(struct JacobianPixel));
@@ -338,7 +338,7 @@ void init_Jacobian(struct Jacobian *jacob){
         jacob->data[i].lat_deg = 0;
         jacob->data[i].lon_deg = 0;
     }
-    for(int i = 0; i< 144; i++){
+    for(int i = 0; i< jacob->numPts_LL; i++){
         jacob->Pts_lat_vec[i] = 0;
         jacob->Pts_lon_vec[i] = 0;
         jacob->Pts_ind_vec[i] = -1;

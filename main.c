@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     start = clock();
 
     //read file path, index from a config file (txt)
-    char windFilename[1000],L1dataFilename[1000],str[100], a[10];
+    char windFilename[1000],L1dataFilename[1000],saveDir[1000], str[100], a[10];
     FILE *fp;
     int len;
     int sampleIndex; //zero based
@@ -32,22 +32,24 @@ int main(int argc, char *argv[]) {
 
     fgets(windFilename, 1000, fp); //read first line (wind file name)
     fgets(L1dataFilename, 1000, fp); //read second line (CYGNSS file name)
+    fgets(saveDir, 1000, fp); //Directory to write DDMfm, Jaocbian and indexLL
     len = strlen(windFilename); windFilename[len-1] = '\0';  //add '\0' at the end of filename which means the end of the string
     len = strlen(L1dataFilename); L1dataFilename[len-1] = '\0';
+    len = strlen(saveDir); saveDir[len-1] = '\0';
 
-    fgets(str, 100, fp); //read 3th line (DDM index) zeros based 0 - 3
+    fgets(str, 100, fp); //read 4th line (DDM index) zeros based 0 - 3
     ddmIndex = atoi(strncpy(a, str+14, 1));
-    fgets(str, 100, fp); //read 4th line (CYGNSS index)
+    fgets(str, 100, fp); //read 5th line (CYGNSS index)
     sampleIndex = atoi(strncpy(a, str+14, 5));
-    fgets(str, 100, fp); //read 5th line
-    info.numPtsLon = atoi(strncpy(a, str+14, 5));
     fgets(str, 100, fp); //read 6th line
-    info.numPtsLat = atoi(strncpy(a, str+14, 5));
+    info.numPtsLon = atoi(strncpy(a, str+14, 5));
     fgets(str, 100, fp); //read 7th line
-    info.lon_min_deg = atof(strncpy(a, str+14, 10));
+    info.numPtsLat = atoi(strncpy(a, str+14, 5));
     fgets(str, 100, fp); //read 8th line
-    info.lat_min_deg = atof(strncpy(a, str+14, 10));
+    info.lon_min_deg = atof(strncpy(a, str+14, 10));
     fgets(str, 100, fp); //read 9th line
+    info.lat_min_deg = atof(strncpy(a, str+14, 10));
+    fgets(str, 100, fp); //read 10th line
     info.resolution = atof(strncpy(a, str+14, 10));
 
     info.lon_max_deg = info.lon_min_deg + info.resolution * (info.numPtsLon-1);
@@ -104,9 +106,9 @@ int main(int argc, char *argv[]) {
 
     //Save simulated DDM and Jacobian -------------------------------------------------------------------------------------------------
     //DDMobs_saveToFile(l1data, sampleIndex,pathType);
-    DDMfm_saveToFile(ddm_fm, sampleIndex,pathType);
-    Jacobian_saveToFile(jacob, sampleIndex, pathType);
-    indexLL_saveToFile(jacob);
+    DDMfm_saveToFile(ddm_fm, sampleIndex, pathType, saveDir);
+    Jacobian_saveToFile(jacob, sampleIndex, pathType, saveDir);
+    indexLL_saveToFile(jacob, saveDir);
 
     free(pp.data);
     free(iwf.data);
@@ -120,6 +122,8 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+
+/*
 void Process_DDM(char windFilename[], char HWRFtype[], char L1dataFilename[], int sampleIndex, int ddmIndex, int pathType){
     struct CYGNSSL1 l1data;
     double start1, end1;
@@ -187,6 +191,7 @@ void Process_DDM(char windFilename[], char HWRFtype[], char L1dataFilename[], in
     printf("END\n");
     printf("\n");
 } // end of process_DDM
+
 
 double find_opt_delayshift(char L1dataFilename[], int sampleIndex, int ddmIndex){
     // return the optimal shift in DDM model
@@ -385,3 +390,5 @@ void FiniteDiff(char windFilename[], char HWRFtype[], char L1dataFilename[], int
     printf("END\n");
     printf("\n");
 } // end of FiniteDiff
+
+ */

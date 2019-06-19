@@ -4,11 +4,14 @@
 
 #include "forwardmodel.h"
 #include "complex.h"
+#include <string.h>
 
-void DDMfm_saveToFile(struct DDMfm ddm_fm, int index, int pathType) {
+void DDMfm_saveToFile(struct DDMfm ddm_fm, int index, int pathType, char saveDir[1000]) {
 
     double val;
     char filename[50];
+    char temp[1000];
+    strcpy(temp,saveDir);
 
     FILE *outp;
     switch(pathType){
@@ -20,7 +23,8 @@ void DDMfm_saveToFile(struct DDMfm ddm_fm, int index, int pathType) {
             outp = fopen(filename, "wb");
             break;
         case 2:
-            outp = fopen("/users/fax/CYGNSS/VAM/VAM_MATLAB/DDMfm.dat","wb");
+            strcat(temp, "DDMfm.dat");
+            outp = fopen(temp,"wb");
             break;
     }
 
@@ -32,8 +36,10 @@ void DDMfm_saveToFile(struct DDMfm ddm_fm, int index, int pathType) {
     printf("save FM DDM into file\n");
 }
 
-void Jacobian_saveToFile(struct Jacobian jacob, int index, int pathType){
+void Jacobian_saveToFile(struct Jacobian jacob, int index, int pathType, char saveDir[1000]){
     double val,lat,lon;
+    char temp[1000];
+    strcpy(temp,saveDir);
     //complex double valc;
 
     FILE *outp,*outp1,*outp2;
@@ -47,7 +53,8 @@ void Jacobian_saveToFile(struct Jacobian jacob, int index, int pathType){
             printf('save Jacobian not available\n');
             break;
         case 2:
-            outp = fopen("/users/fax/CYGNSS/VAM/VAM_MATLAB/Jacobian.dat", "wb");
+            strcat(temp, "Jacobian.dat");
+            outp = fopen(temp, "wb");
             //outp1 = fopen("/users/fax/CYGNSS/VAM/MATLAB/Jacobian_lat.dat", "wb");
             //outp2 = fopen("/users/fax/CYGNSS/VAM/MATLAB/Jacobian_lon.dat", "wb");
             break;
@@ -78,9 +85,12 @@ void Jacobian_saveToFile(struct Jacobian jacob, int index, int pathType){
 }
 
 
-void indexLL_saveToFile(struct Jacobian jacob) {
+void indexLL_saveToFile(struct Jacobian jacob, char saveDir[1000]) {
     //FILE *outp = fopen("PtsVec.dat", "wb");
-    FILE *outp = fopen("/users/fax/CYGNSS/VAM/VAM_MATLAB/indexLL.dat", "wb");
+    char temp[1000];
+    strcpy(temp,saveDir);
+    strcat(temp, "indexLL.dat");
+    FILE *outp = fopen(temp, "wb");
     fwrite(jacob.Pts_ind_vec, sizeof(int), jacob.numPts_LL, outp);
 //    double temp;
 //    for (int j = 0; j < jacob.numPts_LL; j++) {
@@ -90,6 +100,5 @@ void indexLL_saveToFile(struct Jacobian jacob) {
 //        //fwrite(&jacob.Pts_lon_vec[j], sizeof(double), 1, outp);
 //    }
     fclose(outp);
-    //printf("save Points vector in LL from Jacobian into file\n");
     printf("save index of points in LL into file\n");
 }

@@ -48,18 +48,6 @@ void ddmaLUT_initialize(void){
 
 void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField iwf, double grid_resolution){
 
-    /*
-    double x_vec[2]={16.50,16.625};
-    double y_vec[2]={-55.275, -55.15};
-    double x=16.574098;
-    double y=-55.216366;
-    int bi_index2[4];
-    double bi_weight2[4];
-    bilinear_interp(x_vec, y_vec, 2, 2, x, y, bi_index2, bi_weight2, 0.125);
-    printf("bi_index= %d, %d, %d ,%d\n",bi_index2[0],bi_index2[1],bi_index2[2],bi_index2[3]);
-    printf("bi_weight= %f, %f, %f ,%f\n",bi_weight2[0],bi_weight2[1],bi_weight2[2],bi_weight2[3]);
-    */  //to debug bilinear_interp
-
     //interpolate from iwf.data[] to wf.data[]
     printf("Interpolate wind field into surface frame\n");
 
@@ -68,6 +56,7 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
     double dphi, dtheta, phi, theta;  //all in unit of rad
     int numX, numY, numPts, ind;
 
+    //printf ("geom sp = %f %f %f\n",geom.sp_position_ecef_m[0],geom.sp_position_ecef_m[1],geom.sp_position_ecef_m[2]);
     r_sp = vector_norm(geom.sp_position_ecef_m);
     d = grid_resolution;
     dphi = d/r_sp; //in rad
@@ -124,6 +113,7 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
         PUT_LAT[i] = pos_lla[0];
         PUT_LON[i] = pos_lla[1];
         PUT_H[i] = pos_lla[2];
+
     }
 
     int savePUT;
@@ -144,8 +134,15 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
     double *lon_vec, *lat_vec;
     lon_vec = (double *)calloc(iwf.numPtsLon,sizeof(double));
     lat_vec = (double *)calloc(iwf.numPtsLat,sizeof(double));
+
+    //PUT_LON is in -180 to 180; iwf.lon_min_deg is in 0-360
+
     for (int i = 0; i < iwf.numPtsLon; i++){
-        lon_vec[i] = iwf.lon_min_deg + i*iwf.resolution_lon_deg-360;   //-180 ~ 180
+        if (iwf.lon_min_deg > 180){
+            lon_vec[i] = iwf.lon_min_deg + i*iwf.resolution_lon_deg-360;   //-180 ~ 180
+        }else{
+            lon_vec[i] = iwf.lon_min_deg + i*iwf.resolution_lon_deg;
+        }
     }
     for (int i = 0; i < iwf.numPtsLat; i++){
         lat_vec[i] = iwf.lat_min_deg + i*iwf.resolution_lat_deg;
@@ -157,8 +154,7 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
     for (int i = 0; i<numPts; i++){
         bilinear_interp(lon_vec, lat_vec, iwf.numPtsLon, iwf.numPtsLat,
                                PUT_LON[i], PUT_LAT[i], bi_index, bi_weight, fabs(iwf.resolution_lat_deg));
-        //bilinear_interp(lat_vec, lon_vec, iwf.numPtsLat, iwf.numPtsLon,
-        //                PUT_LAT[i], PUT_LON[i], bi_index, bi_weight, fabs(iwf.resolution_lat_deg));
+
         wf->data[i].windSpeed_U10_ms = bi_weight[0]*iwf.data[bi_index[0]].windSpeed_ms
                                        +bi_weight[1]*iwf.data[bi_index[1]].windSpeed_ms
                                        +bi_weight[2]*iwf.data[bi_index[2]].windSpeed_ms
