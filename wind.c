@@ -112,12 +112,13 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
         wgsxyz2lla(pos_ecef,pos_lla);
         PUT_LAT[i] = pos_lla[0];
         PUT_LON[i] = pos_lla[1];
+        if (PUT_LON[i] < 0) PUT_LON[i]=PUT_LON[i]+360; //convert from -180 -180 to 0-360
         PUT_H[i] = pos_lla[2];
 
     }
 
     int savePUT;
-    savePUT=0;
+    savePUT = 0;
     if (savePUT==1){
         FILE *outp = fopen("PUT.dat", "wb");
         for (int i = 0;i< numPts;i++) {
@@ -138,11 +139,7 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
     //PUT_LON is in -180 to 180; iwf.lon_min_deg is in 0-360
 
     for (int i = 0; i < iwf.numPtsLon; i++){
-        if (iwf.lon_min_deg > 180){
-            lon_vec[i] = iwf.lon_min_deg + i*iwf.resolution_lon_deg-360;   //-180 ~ 180
-        }else{
             lon_vec[i] = iwf.lon_min_deg + i*iwf.resolution_lon_deg;
-        }
     }
     for (int i = 0; i < iwf.numPtsLat; i++){
         lat_vec[i] = iwf.lat_min_deg + i*iwf.resolution_lat_deg;

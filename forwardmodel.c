@@ -48,8 +48,8 @@ void forwardModel(struct metadata meta, struct powerParm pp, struct inputWindFie
     }
 
 
-    //surface_saveWindToFile();
-    //surface_saveDopplerToFile();
-    //surface_saveDelayToFile();
+//    surface_saveWindToFile();
+//    surface_saveDopplerToFile();
+//    surface_saveDelayToFile();
 }
 

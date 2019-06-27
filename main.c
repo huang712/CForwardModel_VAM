@@ -57,18 +57,16 @@ int main(int argc, char *argv[]) {
 
     //Initilization -----------------------------------------------------------------------------------------------------------------------
     int pathType=2; //0 for save in current directory; 1 for save in folders; 2 for in VAM folder
-    char HWRFtype[100]="data";  //data or synoptic
 
     struct CYGNSSL1 l1data;
     readL1data(L1dataFilename, sampleIndex, ddmIndex, &l1data);  //read L1 data into the structure l1data
 
-    /*
     //quality flag should be checked before running the forward model
-    //if(l1data.quality_flags != 0){
-    //    printf("Quality flags is not 0\n");
-    //    return 0; //skip data of quality issue
-    //}
-    */
+    if(l1data.quality_flags != 0){
+        printf("Quality flags = %d\n",l1data.quality_flags);
+        return 0; //skip data of quality issue
+    }
+
     printf("ddmIndex = %d, sampleIndex = %d, quality_flags = %d\n", ddmIndex, sampleIndex, l1data.quality_flags);
     printf("GPS PRN = %d\n", l1data.prn_code);
     printf("sp delay row = %f, sp doppler col = %f\n", l1data.ddm_sp_delay_row,l1data.ddm_sp_dopp_col);
@@ -85,13 +83,7 @@ int main(int argc, char *argv[]) {
     printf("\n");
     printf("Initialize input/output structure...\n");
 
-
-    if(strcmp(HWRFtype,"core") == 0) init_inputWindField_core(windFilename, &iwf);
-    else if(strcmp(HWRFtype,"synoptic") == 0) init_inputWindField_synoptic(windFilename, &iwf);
-    else if(strcmp(HWRFtype,"data") == 0){
-        init_inputWindField_data(windFilename, &iwf, info);
-    }
-
+    init_inputWindField_data(windFilename, &iwf, info);
     init_metadata(l1data, &meta);
     init_powerParm(l1data, &pp);  //cost time ~ 0.3s
     init_Geometry(l1data, &geom);
@@ -101,7 +93,8 @@ int main(int argc, char *argv[]) {
     //Run forward model ---------------------------------------------------------------------------------------------------------------
     forwardModel(meta, pp, iwf, geom, &ddm_fm, &jacob,1);
 
-    printf("ddm 50= %e\n",ddm_fm.data[92].power);
+    printf("ddm obs = %e\n",l1data.DDM_power[6][5]);
+    printf("ddm fm = %e\n",ddm_fm.data[91].power);
     printf("H = %e\n",jacob.data[4912].value);
 
     //Save simulated DDM and Jacobian -------------------------------------------------------------------------------------------------
