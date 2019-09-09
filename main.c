@@ -30,19 +30,29 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    fgets(windFilename, 1000, fp); //read first line (wind file name)
+    fgets(windFilename, 1000, fp); //read first line (wind file name)  there is a '\n' at the end of the string - need to remove
     fgets(L1dataFilename, 1000, fp); //read second line (CYGNSS file name)
     fgets(saveDir, 1000, fp); //Directory to write DDMfm, Jaocbian and indexLL
+
     len = strlen(windFilename); windFilename[len-1] = '\0';  //add '\0' at the end of filename which means the end of the string
     len = strlen(L1dataFilename); L1dataFilename[len-1] = '\0';
     len = strlen(saveDir); saveDir[len-1] = '\0';
 
+    char a4[2];
     fgets(str, 100, fp); //read 4th line (DDM index) zeros based 0 - 3
-    ddmIndex = atoi(strncpy(a, str+14, 1));
+    strncpy(a4, str+14, 1);
+    ddmIndex = atoi(a4);
+
+    char a5[10];
     fgets(str, 100, fp); //read 5th line (CYGNSS index)
-    sampleIndex = atoi(strncpy(a, str+14, 5));
+    strncpy(a5, str+14, 8);  //it will add '\0' at the end of the string
+    sampleIndex = atoi(a5);
+
+    char a6[10];
     fgets(str, 100, fp); //read 6th line
-    info.numPtsLon = atoi(strncpy(a, str+14, 5));
+    strncpy(a6, str+14, 5);
+    info.numPtsLon = atoi(a6);
+
     fgets(str, 100, fp); //read 7th line
     info.numPtsLat = atoi(strncpy(a, str+14, 5));
     fgets(str, 100, fp); //read 8th line
