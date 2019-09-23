@@ -810,7 +810,7 @@ void ddm_initACF(void){
     //added by Feixiong
     // load PRN ACF matrix
     FILE *file;
-    char *ACF_filename = "/users/fax/CYGNSS/Data/PRN_ACF.bin";
+    char *ACF_filename = PRN_ACF_FILE;
     file = fopen(ACF_filename,"rb");
     if (file == NULL){
         printf("fail to open PRN ACF file\n");

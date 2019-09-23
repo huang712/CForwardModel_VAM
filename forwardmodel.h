@@ -9,6 +9,9 @@
 #include <stdlib.h>
 #include "cygnss.h"
 
+#define ANTENNA_PATH "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx"
+#define PRN_ACF_FILE "/users/fax/CYGNSS/Data/PRN_ACF.bin"
+
 struct windInfo  // information of wind field in the data from the config file
 {
     int numPtsLat, numPtsLon;
@@ -149,6 +152,7 @@ void init_inputWindField_data(char dataName[], struct inputWindField *iwf, struc
 void init_Geometry(struct CYGNSSL1 l1data, struct Geometry *geom);
 void init_DDM(struct CYGNSSL1 l1data, struct DDMfm *ddm_fm);
 void init_Jacobian(struct Jacobian *jacob);
+char* getRxAntenna0(int sc_num, int ddm_ant);
 char* getRxAntenna(int sc_num, int ddm_ant);
 
 //saveFile.c : file saving functions (for debug)

@@ -1,5 +1,7 @@
 // Forward model for DDM assimilation
-// Will CYGNSS data and wind field data file to produce a simualted DDM and a Jacobian matrix
+// Read a config file as input
+// Read CYGNSS data and wind field data file to produce a simulated DDM and a Jacobian matrix
+// Version 3.00  2019/09/22 by Feixiong Huang
 
 #include <math.h>
 #include <time.h>

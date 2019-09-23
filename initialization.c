@@ -1,6 +1,7 @@
 //
 // Created by Feixiong Huang on 10/19/17.
 //
+#include <stdio.h>
 #include <netcdf.h>
 #include <math.h>
 #include <string.h>
@@ -59,7 +60,6 @@ void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp){
     FILE *file;
     char *Rx_filename = getRxAntenna(l1data.sc_num, l1data.ddm_ant);
     file = fopen(Rx_filename,"rb");
-    //file = fopen("../../Data/antennaRx_CYGNSS_Obs1_Nadir01_Port_E2ES_v3.bin","rb");
 
     if (file == NULL){
         printf("fail to open antenna file\n");
@@ -196,10 +196,23 @@ void init_Jacobian(struct Jacobian *jacob){
 
 }
 
-
 char* getRxAntenna(int sc_num, int ddm_ant){
+    static char filename[100] = ANTENNA_PATH;
+    char str1[2];
+    sprintf(str1, "%d", sc_num);
+    strcat(filename, str1);
+    switch(ddm_ant){
+        case 0: printf("No antenna\n");break;
+        case 2: strcat(filename,"_starboard_E2ES_v6.bin");
+        case 3: strcat(filename,"_port_E2ES_v6.bin");
+    }
+    return filename;
+}
+
+char* getRxAntenna0(int sc_num, int ddm_ant){
     char *filename;
     //char prefix[]="/Data/All_E2ES_antennas/V6";  //must return a pointer, but pointer cannot connect by strcat
+
     switch(sc_num){
 
         case 1:

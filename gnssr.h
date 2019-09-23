@@ -53,7 +53,6 @@
 #define omega0 7.2921158553e-5 //earth rotation in rad/s
 
 #define upsamplingFactor 10  //upsamplingFactor of receiver antenna pattern
-//#define windModelType = 0; //0 for isotropic, 1 for anisotropic
 
 FILE *outputPtr, *errPtr, *consolePtr;
 
