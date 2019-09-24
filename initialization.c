@@ -62,6 +62,7 @@ void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp){
     file = fopen(Rx_filename,"rb");
 
     if (file == NULL){
+        printf("antenna file = %s",Rx_filename);
         printf("fail to open antenna file\n");
         exit(1);
     }
@@ -203,8 +204,8 @@ char* getRxAntenna(int sc_num, int ddm_ant){
     strcat(filename, str1);
     switch(ddm_ant){
         case 0: printf("No antenna\n");break;
-        case 2: strcat(filename,"_starboard_E2ES_v6.bin");
-        case 3: strcat(filename,"_port_E2ES_v6.bin");
+        case 2: strcat(filename,"_starboard_E2ES_v6.bin");break;
+        case 3: strcat(filename,"_port_E2ES_v6.bin");break;
     }
     return filename;
 }
