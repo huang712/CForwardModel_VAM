@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
     int len;
     int sampleIndex; //zero based
     int ddmIndex; //ddm channel 0-3
+    int option; //option = 0, only compute DDM; option = 1, compute DDM+Jacobian
     struct windInfo info;
     fp = fopen(argv[1], "r"); // argv[1] is the config file name
     if (fp == NULL){
@@ -63,6 +64,8 @@ int main(int argc, char *argv[]) {
     info.lat_min_deg = atof(strncpy(a, str+14, 10));
     fgets(str, 100, fp); //read 10th line
     info.resolution = atof(strncpy(a, str+14, 10));
+    fgets(str, 100, fp); //read 11th line
+    option = atoi(strncpy(a, str+14, 1));
 
     info.lon_max_deg = info.lon_min_deg + info.resolution * (info.numPtsLon-1);
     info.lat_max_deg = info.lat_min_deg + info.resolution * (info.numPtsLat-1);
@@ -103,7 +106,7 @@ int main(int argc, char *argv[]) {
     init_Jacobian(&jacob);
 
     //Run forward model ---------------------------------------------------------------------------------------------------------------
-    forwardModel(meta, pp, iwf, geom, &ddm_fm, &jacob,1);
+    forwardModel(meta, pp, iwf, geom, &ddm_fm, &jacob,option);
 
     printf("ddm obs = %e\n",l1data.DDM_power[6][5]);
     printf("ddm fm = %e\n",ddm_fm.data[91].power);
@@ -111,8 +114,11 @@ int main(int argc, char *argv[]) {
 
     //Save simulated DDM and Jacobian -------------------------------------------------------------------------------------------------
     //DDMobs_saveToFile(l1data, sampleIndex,pathType);
+    printf("option = %d\n",option);
     DDMfm_saveToFile(ddm_fm, sampleIndex, pathType, saveDir);
-    Jacobian_saveToFile(jacob, sampleIndex, pathType, saveDir);
+    if (option == 1) {
+        Jacobian_saveToFile(jacob, sampleIndex, pathType, saveDir);
+    }
     indexLL_saveToFile(jacob, saveDir);
 
     free(pp.data);
