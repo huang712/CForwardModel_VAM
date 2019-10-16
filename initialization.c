@@ -35,7 +35,6 @@ void init_metadata(struct CYGNSSL1 l1data, struct metadata *meta) {
 
     meta->temp_K = l1data.ant_temperature_cels+273.15;
     meta->noiseFigure_dB = l1data.noise_figue;
-    meta->thermalNoiseOnOff = 0;
     meta->excess_noisefloor_dB = 0;
 
     meta->grid_resolution_m = 1000;
@@ -54,7 +53,6 @@ void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp){
     pp->AntennaType = 0;  //0 for antenna file, 1 for isotropic
     pp->Tx_Power_dB = 10 * log10(l1data.gps_eirp_watt);
     pp->AtmosphericLoss_dB = 0.0;
-    pp->Rx_upsamplingFactor = 10;
 
     //use lidata.sc_num to select antenna patterns
     FILE *file;

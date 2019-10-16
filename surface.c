@@ -34,11 +34,14 @@ void getSurfaceFieldDataName( int type, char *filename );
 void getSurfaceFieldData( int type, double *vals, char *filename, double minmax[2]);
 
 
-double dmdx(double ws){
+double dmdx (double ws){
     //compute derivative of MSS respect to wind speed in Katzberg model
-    if(ws>0 && ws<3.49) {return 1.143e-3;}
-    else if(ws>3.49 && ws<46) {return 6.858e-3/ws;}
+    if(ws>=0 && ws<=3.49) {return 1.143e-3;}
+    else if(ws>3.49 && ws<=46) {return 6.858e-3/ws;}
     else if(ws>46) {return 4.69773e-4;}
+    else {
+        printf("Negative wind speed\n"); exit(0);
+    }
 }
 
 
@@ -394,11 +397,12 @@ void surface_calcSigma0OnSurface(int windModelType){	//compute RCS at surface (6
         }
 
         dP       = -1/(2*pi) * ( 1/pow(mss_iso,2) +                   //dP for isotropic mss
-                                 (-1/2 * (pow(x,2) + pow(y,2))/pow(mss_iso,3) ) ) *
-                   exp(  -1/2 * ( ( pow(x,2) + pow(y,2) )/ mss_iso )) * dmdx(ws);
+                                 (-1.0/2 * (pow(x,2) + pow(y,2))/pow(mss_iso,3) ) ) *
+                   exp(  -1.0/2 * ( ( pow(x,2) + pow(y,2) )/ mss_iso )) * dmdx(ws);
 
         sigma0_dP = pi * R2 * Q4 * dP;  //derivative of sigma0 (used for H matrix)
 
+        //printf("test = %f\n",-1/2.0);
         // if use DDMA LUT, need to first ddmaLUT_initialize();
         /*
         double sigma0_GMF;
@@ -497,14 +501,20 @@ void surface_composeTotalScatPowrOnSurface(int type){  //type=1
                                              * surface.data[idx].rainAtten_abs ;
             }
             break;
-        case 2: // speckle, so sqrt of scattered power and phase factor
+        case 2: // speckle, so sqrt of scattered power and phase factor - this method has problems
             for (int idx = 0; idx < surface.numGridPts; idx++){
+//                surface.data[idx].total =
+//                        sqrt(surface.data[idx].powerFactor * surface.data[idx].sigma0 * surface.data[idx].rainAtten_abs)
+//                        * surface.data[idx].phaseShiftFactor0 * surface.data[idx].phaseShiftFactor1 * surface.data[idx].mask;
+//                surface.data[idx].total_dP =
+//                        sqrt(surface.data[idx].powerFactor * surface.data[idx].sigma0_dP * surface.data[idx].rainAtten_abs)
+//                        * surface.data[idx].phaseShiftFactor0 * surface.data[idx].phaseShiftFactor1 * surface.data[idx].mask;
                 surface.data[idx].total =
                         sqrt(surface.data[idx].powerFactor * surface.data[idx].sigma0 * surface.data[idx].rainAtten_abs)
-                        * surface.data[idx].phaseShiftFactor0 * surface.data[idx].phaseShiftFactor1 * surface.data[idx].mask;
+                        * surface.data[idx].phaseShiftFactor0 * surface.data[idx].phaseShiftFactor1;
                 surface.data[idx].total_dP =
                         sqrt(surface.data[idx].powerFactor * surface.data[idx].sigma0_dP * surface.data[idx].rainAtten_abs)
-                        * surface.data[idx].phaseShiftFactor0 * surface.data[idx].phaseShiftFactor1 * surface.data[idx].mask;
+                        * surface.data[idx].phaseShiftFactor0 * surface.data[idx].phaseShiftFactor1;
             }
             break;
         default:
@@ -806,15 +816,13 @@ void surface_updateSpeckle(void){
 
 
 void getSurfaceFieldData( int type, double *vals, char *filename, double minmax[2] ){
-    unsigned width  = surface.numGridPtsX;
-    unsigned height = surface.numGridPtsY;
+    int width  = surface.numGridPtsX;
+    int height = surface.numGridPtsY;
 
     int x,y,idx;
     double min, max, val;
-
-
-
-
+    min = 0;
+    max = 0;
     for(y = 0; y < height; y++){
         for(x = 0; x < width; x++) {
             idx = SURFINDEX(x, y); //y*width + x;

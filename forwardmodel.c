@@ -5,7 +5,7 @@
 #include "gnssr.h"
 
 void forwardModel(struct metadata meta, struct powerParm pp, struct inputWindField iwf,
-                  struct Geometry geom, struct DDMfm *ddm_fm, struct Jacobian *jacob, int option)
+                  struct Geometry geom, struct DDMfm *ddm_fm, struct Jacobian *jacob, struct option opt)
 {
     //option = 0, only compute DDM; option = 1, compute DDM+Jacobian
     printf("Running forward model...\n");
@@ -35,17 +35,15 @@ void forwardModel(struct metadata meta, struct powerParm pp, struct inputWindFie
 
     //calculate the DDM forward model
     ddm_binSurface();
-    surface_composeTotalScatPowrOnSurface(1); //1 for no speckle.  no mask
+    surface_composeTotalScatPowrOnSurface(1); //1 for no speckle.  no mask; speckle not working
 
     ddm_mapSurfaceToDDM();
     ddm_convolveFFT(2);
-    ddm_mag(); //save to DDM[i];
+    ddm_mag(); // %DDM[i] = cabs(DDM[i])
+    if (opt.thermalNoiseOnOff ==1) {ddm_addGaussianNoise();}   //add thermal noise
 
-    ddm_save(meta,ddm_fm,1);  //save to structure ddm_fm
-
-    if (option == 1){
-        ddm_Hmatrix(meta, iwf, jacob);  //compute and save to structure jacob
-    }
+    ddm_save(meta,ddm_fm,1);  //resample DDM to 17x11 and save to structure ddm_fm
+    if (opt.JacobOnOff == 1) {ddm_Hmatrix(meta, iwf, jacob);} //compute and save to structure jacob
 
 
 //    surface_saveWindToFile();

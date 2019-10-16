@@ -753,9 +753,9 @@ void ddm_convolveFFT(int ambFuncType){   //type=2
     // versions of the amb func are used for different purposes
     ddm_fft();
     switch (ambFuncType) {
-        case 0:  for(int i = 0; i<ddm.numBins; i++) { DDM[i] = DDM_amb[i]  * DDM[i]; } break;
-        case 1:  for(int i = 0; i<ddm.numBins; i++) { DDM[i] = DDM_amb1[i] * DDM[i]; } break;
-        case 2:  for(int i = 0; i<ddm.numBins; i++) { DDM[i] = DDM_amb2[i] * DDM[i]; } break;
+        case 0:  for(int i = 0; i<ddm.numBins; i++) { DDM[i] = DDM_amb[i]  * DDM[i]; } break; //FFT DDM_amb version
+        case 1:  for(int i = 0; i<ddm.numBins; i++) { DDM[i] = DDM_amb1[i] * DDM[i]; } break; //sqrt DDM_amb version
+        case 2:  for(int i = 0; i<ddm.numBins; i++) { DDM[i] = DDM_amb2[i] * DDM[i]; } break; //mag squared DDM_amb version
         default: fprintf(errPtr,"Error: bad ambFuncType in ddm_convolveFFT"); break;
     }
     ddm_ifft();
@@ -909,54 +909,60 @@ void ddm_initThermalNoise(struct metadata meta){
     double Ti          = 0.001;
     double BW_Hz       = 1/Ti;
 
-    double noisePower_abs =  pow(10,(k/10)) * temp_K * BW_Hz * pow(10,(noiseFig_dB/10));
+    double noisePower_abs =  pow(10,(k/10)) * temp_K * BW_Hz * pow(10,(noiseFig_dB/10)); //
     double noisePower_dBW = 10*log10(noisePower_abs);
 
-
-    ddm.thermalNoisePwr_abs = sqrt(noisePower_abs);
+    ddm.thermalNoisePwr_abs = sqrt(noisePower_abs);  //sigma of noise
+    ddm.thermalNoisePwr_abs = ddm.thermalNoisePwr_abs/1000; // because of incoherent summation
 }
 
 void ddm_addGaussianNoise(void){
     // Add complex, Gaussian noise to DDM (colored with ambiguity function)
     // Currently, the convolution is done separately from the DDM/speckle convolution
     // due to the normalization.
+    printf("Add thermal noise\n");
     for(int i = 0; i<ddm.numBins; i++) {  DDM_temp[i] = DDM[i]; DDM[i] = 0;  }
     ddm_addWhiteGaussianNoise(ddm.thermalNoisePwr_abs);
-    ddm_convolveFFT(1);
+    //ddm_convolveFFT(1);
+
+    //printf("thermalNoisePwr_abs = %e\n",ddm.thermalNoisePwr_abs);
+    //printf("DDM noise = %e\n",DDM[100]);
+
     for(int i = 0; i<ddm.numBins; i++) { DDM[i] += DDM_temp[i]; }
 }
 
 void ddm_addWhiteGaussianNoise(double sigma){
     // Add complex, *white* Gaussian noise to DDM (mean = 0 and variance = sigma^2)
-#define RAND_GEN_TYPE 1
+    #define RAND_GEN_TYPE 1
     double U1,U2;
     double R,T1,T2;
 
-#if (RAND_GEN_TYPE == 1) // standard Box-Muller Method
-    for(int i = 0; i<ddm.numBins; i++) {
-        U1 = uniformRandf();
-        U2 = uniformRandf();
-        R  = sigma*sqrt(-2.0*log(U1))*(1/sqrt(2));
-        T1 = R*cos(2*pi*U2);
-        T2 = R*sin(2*pi*U2);
-        DDM[i] += T1 + I*T2;
-    }
-#endif
+    #if (RAND_GEN_TYPE == 1) // standard Box-Muller Method
+        for(int i = 0; i<ddm.numBins; i++) {
+            U1 = uniformRandf(); //uniform random number (0,1]
+            U2 = uniformRandf();
+            R  = sigma*sqrt(-2.0*log(U1))*(1/sqrt(2));
+            T1 = R*cos(2*pi*U2);
+            T2 = R*sin(2*pi*U2);
+            //DDM[i] += T1 + I*T2;
+            DDM[i] += T1*T1 + T2*T2;  //changed by Feixiong
+        }
+    #endif
 
-#if (RAND_GEN_TYPE == 2) // polar form (supposedly faster ...)
-    double S;
-    for(int i = 0; i<ddm.numBins; i++) {
-        do {
-            U1=2 * uniformRandf() - 1; /* U1=[-1,1] */
-            U2=2 * uniformRandf() - 1; /* U2=[-1,1] */
-            S=U1 * U1 + U2 * U2;
-        } while(S >= 1);
-        R  = sigma*sqrt(-2.0*log(S) / S)*(1/sqrt(2));
-        T1 = R*U1;
-        T2 = R*U2;
-        DDM[i] += T1 + I*T2;
-    }
-#endif
+    #if (RAND_GEN_TYPE == 2) // polar form (supposedly faster ...)
+        double S;
+        for(int i = 0; i<ddm.numBins; i++) {
+            do {
+                U1=2 * uniformRandf() - 1; /* U1=[-1,1] */
+                U2=2 * uniformRandf() - 1; /* U2=[-1,1] */
+                S=U1 * U1 + U2 * U2;
+            } while(S >= 1);
+            R  = sigma*sqrt(-2.0*log(S) / S)*(1/sqrt(2));
+            T1 = R*U1;
+            T2 = R*U2;
+            DDM[i] += T1 + I*T2;
+        }
+    #endif
 }
 
 // uniform random number (0,1]. never = 0 so that we can safely take log of it

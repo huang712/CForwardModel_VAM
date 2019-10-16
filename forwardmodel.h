@@ -12,6 +12,12 @@
 #define ANTENNA_PATH "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx"
 #define PRN_ACF_FILE "/users/fax/CYGNSS/Data/PRN_ACF.bin"
 
+struct option
+{
+    int JacobOnOff;
+    int thermalNoiseOnOff;
+};
+
 struct windInfo  // information of wind field in the data from the config file
 {
     int numPtsLat, numPtsLon;
@@ -39,13 +45,12 @@ struct metadata
     //thermalNoise
     double temp_K;
     double noiseFigure_dB;
-    unsigned int thermalNoiseOnOff;
     double excess_noisefloor_dB;
 
     //surfaceGrid
     double grid_resolution_m;
     int numGridPoints[2];
-    unsigned int surfaceCurvatureType;
+    int surfaceCurvatureType;
 
     int utc_sec;
     int prn_code;
@@ -61,7 +66,6 @@ struct powerParm
     unsigned int AntennaType;
     double Tx_Power_dB;
     double AtmosphericLoss_dB;
-    double Rx_upsamplingFactor;
     int Rx_numEl;
     int Rx_numAz;
     int Rx_numData;
@@ -141,7 +145,7 @@ struct JacobianPixel
 //forward model.c : Forward model main function
 void forwardModel(struct metadata meta, struct powerParm pp,
                   struct inputWindField iwf, struct Geometry geom,
-                  struct DDMfm *ddm_fm, struct Jacobian *jacob, int option);
+                  struct DDMfm *ddm_fm, struct Jacobian *jacob, struct option opt);
 
 //initialization.c : initialization functions
 void init_metadata(struct CYGNSSL1 l1data, struct metadata *meta);

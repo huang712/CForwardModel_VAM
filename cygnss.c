@@ -11,7 +11,8 @@ void readL1data(char L1dataFilename[], int sampleIndex, int ddm_index, struct CY
     printf("read CYGNSS L1 data\n");
 
     int ncid;
-    int sample_id, sample_num, sc_num_id;
+    int sample_id, sc_num_id;
+    size_t sample_num;
     int retval;  //Error handling
 
     // Open the file
@@ -20,7 +21,7 @@ void readL1data(char L1dataFilename[], int sampleIndex, int ddm_index, struct CY
     //read and check number of samples of the data
     if ((retval = nc_inq_dimid(ncid, "sample", &sample_id))) ERR(retval);
     if ((retval = nc_inq_dimlen(ncid, sample_id, &sample_num))) ERR(retval);
-    if (sampleIndex > sample_num-1) printf("sample index is larger than length of data\n");
+    if (sampleIndex > (int)sample_num-1) printf("sample index is larger than length of data\n");
 
     //read CYGNSS spacecraft ID 1-8
     if ((retval = nc_inq_varid(ncid, "spacecraft_num", &sc_num_id))) ERR(retval);
