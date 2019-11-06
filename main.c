@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
 
     printf("ddm obs = %e\n",l1data.DDM_power[6][5]);
     printf("ddm fm = %e\n",ddm_fm.data[92].power);
-    printf("H = %e\n",jacob.data[4912].value);
+    printf("H = %e\n",jacob.data[12247].value);
 
     //Save simulated DDM and Jacobian -------------------------------------------------------------------------------------------------
     //DDMobs_saveToFile(l1data, sampleIndex,pathType);
