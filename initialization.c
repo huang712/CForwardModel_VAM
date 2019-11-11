@@ -20,12 +20,12 @@ void init_metadata(struct CYGNSSL1 l1data, struct metadata *meta) {
     meta->meas_ddm_sp_index[1] = l1data.ddm_sp_dopp_col;
 
     //default numbers
-    meta->numDelaybins = 100;
-    meta->numDopplerbins = 200;  //400
+    meta->numDelaybins = 100;    //100  400
+    meta->numDopplerbins = 200;  //200 400
     meta->delayRez_chips = 0.0510345;
     meta->dopplerRes_Hz = 25;  //25
     meta->resample_startBin[0] = 0;
-    meta->resample_startBin[1] = 0; //100
+    meta->resample_startBin[1] = 0; //0 100
     meta->resample_resolution_bins[0] = 5;
     meta->resample_resolution_bins[1] = 20;
     meta->resample_numBins[0] = 17;
