@@ -1,7 +1,7 @@
 /cmake-build-debug/*
 .DS_Store
 .idea
-CMakeList.txt
+CMakeLists.txt
 Makefile
 CMakeCache.txt
 cmake_install.cmake
