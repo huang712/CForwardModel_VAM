@@ -1,4 +1,4 @@
-/cmake-build-debug/*
+/cmake-build-debug/
 .DS_Store
 .idea
 CMakeLists.txt
@@ -7,3 +7,4 @@ CMakeCache.txt
 cmake_install.cmake
 /CMakeFiles/*
 CForwardModel_VAM
+*.sh~
