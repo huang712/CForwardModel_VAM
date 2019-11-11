@@ -6,3 +6,4 @@ Makefile
 CMakeCache.txt
 cmake_install.cmake
 /CMakeFiles/*
+CFowardModel_VAM
