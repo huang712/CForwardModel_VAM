@@ -3,7 +3,7 @@ This is the GNSS-R delay-Doppler map (DDM) forward model developed by Feixiong H
 
 Reading a gridded wind field and CYGNSS Level 1 data, the forward model can produce a simulated DDM and a Jacobian matrix.
 
-##source code explaination: 
+## source code explaination: 
 
 main.c : main functions of the program for data processing 
 
