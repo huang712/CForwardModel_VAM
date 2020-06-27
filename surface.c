@@ -402,6 +402,7 @@ void surface_calcSigma0OnSurface(int windModelType){	//compute RCS at surface (6
 
         sigma0_dP = pi * R2 * Q4 * dP;  //derivative of sigma0 (used for H matrix)
 
+        //printf("s2 = %f\n",sqrt(pow(x,2) + pow(y,2)));
         //printf("test = %f\n",-1/2.0);
         // if use DDMA LUT, need to first ddmaLUT_initialize();
         /*
