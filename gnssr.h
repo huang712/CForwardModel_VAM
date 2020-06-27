@@ -1,26 +1,6 @@
-//
-// Created by Feixiong Huang on 10/22/17.
-//
 
 #ifndef CFORWARDMODEL_GNSSR_H
 #define CFORWARDMODEL_GNSSR_H
-
-//***************************************************************************
-// This file is part of the CYGNSS E2ES.
-//
-// CYGNSS E2ES is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// CYGNSS E2ES is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with CYGNSS E2ES.  If not, see <http://www.gnu.org/licenses/>.
-//****************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -165,77 +145,9 @@ typedef struct {
 
 } orbitStruct;
 
-double orbit_loadFile( char *filename, orbitStruct* orbit, int svid, char* label );
-
-void orbit_getGeometry( orbitStruct *orbit, double time_s,
-                        double sv_pos_ecef[3], double sv_vel_ecef[3] );
-
 void wgslla2xyz(double x_llh[3], double x_ecef[3]);
 void wgsxyz2enu(double p_e[3] ,double x_llh[3], double x_enu[3]);
 void wgsxyz2lla( double *x_ecef, double *x_lla );
-
-//******************************************************************************/
-// metadata (temporary format)
-
-typedef struct {
-    double time_s;
-    double rx_pos_ecef[3], rx_vel_ecef[3];
-    double tx_pos_ecef[3], tx_vel_ecef[3];
-    double sx_pos_ecef[3], sx_vel_ecef[3];
-    double sx_pos_llh[3];
-    double is_sx_valid;
-    double rx_range, tx_range, sx_angle_rad, rx_antGain_db, tx_antGain_db, tx_pow_db;
-    double SNR;
-    double is_sx_in_bbox, is_surf_in_bbox;
-} metadataStruct;
-
-//******************************************************************************/
-// track.c
-
-typedef struct {
-    int orbitIdRx, orbitIdTx;
-    double *rx_pos_ecef,*tx_pos_ecef,*sx_pos_ecef;
-    double *rx_vel_ecef,*tx_vel_ecef,*sx_vel_ecef;
-    double *sx_pos_llh;
-    double *sx_valid;
-    double *time_s;
-    int numTimeSamples;
-    double timeInc_s, timeStart_s;
-} trackStruct;
-
-typedef struct {
-    int numTracks;
-    trackStruct *tracks;
-} trackSet;
-
-
-void track_alloc( trackStruct* track, int numTimeSteps );
-void track_free( trackStruct* track );
-
-void trackSet_outputToFile( trackSet *set );
-void track_calculate( orbitStruct* Rx, orbitStruct* Tx, trackStruct* track,
-                      int numTimeSteps, double timeStart_s, double timeInc_s);
-void track_getSpecularPosition( trackStruct* track, double time_s,
-                                double sx_pos_ecef[3], double sx_vels_ecef[3], double sx_pos_llh[3], double *sx_valid  );
-void track_outputToFile( char *filename, trackStruct *track );
-
-void track_getGeometry( orbitGeometryStruct *g, trackStruct *t, int n);
-
-//******************************************************************************/
-// constellation.c
-
-typedef struct {
-    int numSats;
-    orbitStruct* orbits;
-    char filename[1000];
-    char label[1000];
-} constellationStruct;
-
-void constellation_allocTrackSet( constellationStruct* Rx, constellationStruct* Tx,
-                                  trackSet *trackSet, int numTimeSteps );
-void constellation_genTrackSet( constellationStruct* Rx, constellationStruct* Tx, trackSet *trackSet,
-                                int numTimeSteps, double timeStart_s, double timeInc_s, int trackNum );
-void constellation_loadFile( char *filename, constellationStruct* constellation, char *label );
 
 //******************************************************************************/
 // wind.c
@@ -313,17 +225,6 @@ typedef struct {
     fieldRegion region1, region2;
 } fieldBufferPair;
 
-void windSeries_dumpToFile(fieldBufferPair *dataBuffers);
-int windSeries_getPixel( double lat_deg, double lon_deg, double time_01, fieldBufferPair *dataBuffers, windFieldPixel *wf, double minimumWindSpeedX_ms  );
-void windSeries_ensureNatureRunLoadedForTime( double time_s, fieldBufferPair *dataBuffers );
-void windSeries_initBuffers(fieldBufferPair *dataBuffers );
-void windSeries_ensureFieldsLoaded(const char *dayString, int timeIdx1, int timeIdx2, fieldBufferPair *dataBuffers );
-void windSeries_loadFieldSetMulti(const char *dayString, int timeIdx, fieldSetMulti *data );
-void windSeries_loadFieldSet(const char *filenamePrefix, int timeIdx, fieldSet *data );
-void windSeries_loadFile(const char *filename, int *a, int *b, double **data );
-int windSeries_getDomain( fieldBufferPair *dataBuffers, double lat_deg, double lon_deg );
-
-void windSeries_loadMinWSFile(const char *filename, int *a, double **data );
 
 typedef struct {
     double lat_deg, lon_deg, x_m, y_m, z_m;
@@ -489,7 +390,6 @@ void ddm_initialize(struct metadata meta);
 void ddm_cleanup(void);
 
 void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobian *jacob);
-void ddm_Hmatrix_old(struct metadata meta, struct inputWindField iwf, struct Jacobian *jacob);
 void ddm_mapSurfaceToDDM(void);
 void ddm_mapRegionToDDM(void);
 void ddm_binSurface(void);
@@ -577,20 +477,6 @@ double antenna_getGain_abs( antennaType at, polarizationType pt, double angles_r
 void antenna_save2PNG( void );
 
 //******************************************************************************/
-// image.c prototypes
-void image_initialize(void);
-void image_mapFloat2RGB( double cmin, double cmax, double value, unsigned char *color );
-void image_encodePNG(const char* filename, const unsigned char* image, unsigned width, unsigned height);
-void image_flipud(unsigned width, unsigned height, unsigned char* image);
-void image_initColorMap(void);
-void image_createBlankImage( unsigned char** image, unsigned width, unsigned height );
-void image_createColorBarImage( unsigned char** image, unsigned width, unsigned height );
-void image_composeImages( unsigned char* image_dest, unsigned width_dest, unsigned height_dest,
-                          unsigned char* image_src, unsigned width_src, unsigned height_src, unsigned x, unsigned y );
-void image_plotFigure(const char* filename, unsigned char* image, unsigned width, unsigned height );
-void image_createImageFromDouble( unsigned char **image, double *vals, unsigned width, unsigned height, double min, double max );
-
-//******************************************************************************/
 // math.c prototypes
 void bubble(int *a,int n);
 void bilinear_interp(double *x_vec, double *y_vec, int size_x, int size_y, double x, double y, int *bi_index, double *bi_weight, double resolution);
@@ -626,21 +512,12 @@ double matrix_det_3x3(double m[3][3]);
 void matrix_scaleAdjoint_3x3(double a[3][3],double s,double m[3][3]);
 void matrix_invert_3x3(double A[9], double invA[9]);
 
-//******************************************************************************/
-// main.c
-//int main(int argc, char **argv);
-//int main0(int argc, char **argv, int myProcessID, int numProcesses );
-void composeFilename( char *ddmFilename, const char *descrip, int windFieldIdx, int geometryIdx, int realizationIdx, const char *extension );
-void determin_job_distribution( int numProcesses, int numSamples, int processIdx, int *n1, int *n2 );
 
 //******************************************************************************/
 // file.c
 int file_readASCIIData(const char *filename, int headerLinesToSkip, double *data, int numColumns);
 
 #define fatalError(...) { char str[1000]; sprintf(str, __VA_ARGS__); printf( "%s (%s in %s, line %d)\n", str, __func__, __FILE__, __LINE__); exit(EXIT_FAILURE); }
-#define Log(...)        fprintf(outputPtr, __VA_ARGS__)
-#define logv(level, ...) if( VERBOSE_LEVEL >= level ){ fprintf(outputPtr, __VA_ARGS__); }
-#define assert(B,...)   if( B ){ char str[1000]; sprintf(str, __VA_ARGS__); printf( "%s (%s in %s, line %d)\n", str, __func__, __FILE__, __LINE__); exit(EXIT_FAILURE); }
 
 //******************************************************************************/
 //debug.c

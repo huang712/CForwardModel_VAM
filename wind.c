@@ -1,23 +1,3 @@
-//
-// Created by Feixiong Huang on 11/9/17.
-//
-
-//***************************************************************************
-// This file is part of the CYGNSS E2ES.
-//
-// CYGNSS E2ES is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// CYGNSS E2ES is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with CYGNSS E2ES.  If not, see <http://www.gnu.org/licenses/>.
-//
 //---------------------------------------------------------------------------
 //
 // Code for loading the wind field data and converting to mss.  Surface.c has
@@ -227,21 +207,6 @@ void wind_initialize(windField *wf, struct metadata meta, struct Geometry geom, 
     }
 
     wf->type = 2;//non-uniform wind
-
-    // init single specular point location
-    /*
-    wf->locNumPts     = 1;
-    wf->locType       = 2;
-    wf->locLoaded     = 1;
-    wf->locCurrentPt  = 0;
-    wf->loc_rowIdx    = (double *)calloc(wf->locNumPts, sizeof(double));
-    wf->loc_colIdx    = (double *)calloc(wf->locNumPts, sizeof(double));
-    wf->loc_rowIdx[0] = 250;  //???
-    wf->loc_colIdx[0] = 250;
-    wf->locStartIdx   = 0;
-    wf->locEndIdx     = 0;
-    */
-
 }
 
 void wind_getWindFieldAtXY( windField *wf, double x_m, double y_m, windFieldPixel *value ){  //copy wf to value

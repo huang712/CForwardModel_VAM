@@ -1,23 +1,3 @@
-//
-// Created by Feixiong Huang on 11/13/17.
-//
-
-//***************************************************************************
-// This file is part of the CYGNSS E2ES.
-//
-// CYGNSS E2ES is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// CYGNSS E2ES is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with CYGNSS E2ES.  If not, see <http://www.gnu.org/licenses/>.
-//
 //---------------------------------------------------------------------------
 //
 //  This portion of the E2ES is responsible for creating a gridded surface
@@ -25,104 +5,9 @@
 //
 //****************************************************************************/
 
-
 #include "gnssr.h"
 
-
 typedef enum { FLAT_EARTH, SPHERICAL_EARTH, WGS84_EARTH } gridType;
-
-void grid_analyzeSurface( geometryData *gd ){
-    // for each geometry, determine how the surface should be
-    // gridded for the desired DDM size
-
-
-}
-
-void grid_determineSurfaceSize( orbitGeometryStruct *geometry, double maxDelay, double minDoppler_hz, double maxDoppler_Hz){
-
-}
-
-void grid_construct(orbitGeometryStruct *geometry){
-
-    double grid_pos_specular[3], grid_pos_ecef[3], grid_pos_llh[3], normal[3], area, distance;
-
-    double *sx_pos = geometry->sx_pos;
-
-    int Ni   = surface.numGridPtsX;
-    int Nj   = surface.numGridPtsY;
-    gridType type = surface.surfaceCurvatureType;
-    double R = vector_norm(geometry->sx_pos);
-    double Area_dS = pow(surface.resolution_m,2);
-
-
-    for (int i = 0; i < Ni; i++) {
-        for (int j = 0; j < Nj; j++) {
-
-            // get the coordinates of the surface grid point
-            switch (type) {
-
-                case WGS84_EARTH:
-                    // spare no expense
-                    grid_getGridPt_sphericalEarth(i, j, sx_pos, grid_pos_specular, R);
-                    matrixVectorMult3x3(geometry->SPEC_TO_ECEF_FRAME, grid_pos_specular, grid_pos_ecef );
-                    wgsxyz2lla( grid_pos_ecef, grid_pos_llh );
-                    grid_pos_llh[2] = 0;
-                    wgslla2xyz(grid_pos_llh, grid_pos_ecef);
-                    matrixVectorMult3x3(geometry->ECEF_TO_SPEC_FRAME, grid_pos_ecef, grid_pos_specular );
-
-                    // approx normal
-                    vector_unit(grid_pos_specular, normal);
-
-                    // approx.  Account for change in surface area due to Earth curvature
-                    area = Area_dS * (1 / normal[2]);
-                    break;
-
-                case SPHERICAL_EARTH:
-                    grid_getGridPt_sphericalEarth(i, j, sx_pos, grid_pos_specular, R);
-                    matrixVectorMult3x3(geometry->SPEC_TO_ECEF_FRAME, grid_pos_specular, grid_pos_ecef );
-                    wgsxyz2lla( grid_pos_ecef, grid_pos_llh );
-                    vector_unit(grid_pos_specular, normal);
-
-                    // Account for change in surface area due to Earth curvature
-                    area = Area_dS * (1 / normal[2]);
-                    break;
-
-                case FLAT_EARTH:
-                    grid_getGridPt_flatEarth(i, j, sx_pos, grid_pos_specular);
-                    matrixVectorMult3x3(geometry->SPEC_TO_ECEF_FRAME, grid_pos_specular, grid_pos_ecef );
-                    wgsxyz2lla( grid_pos_ecef, grid_pos_llh );
-
-                    // z-directed normal
-                    normal[0] = 0;
-                    normal[1] = 0;
-                    normal[2] = 1;
-
-                    area = Area_dS;
-                    break;
-            }
-
-
-            int idx = SURFINDEX(i, j);
-            surface.data[idx].i              = i;
-            surface.data[idx].j              = j;
-            surface.data[idx].pos_spec[0]    = grid_pos_specular[0];
-            surface.data[idx].pos_spec[1]    = grid_pos_specular[1];
-            surface.data[idx].pos_spec[2]    = grid_pos_specular[2];
-            surface.data[idx].pos_ecef[0]    = grid_pos_ecef[0];
-            surface.data[idx].pos_ecef[1]    = grid_pos_ecef[1];
-            surface.data[idx].pos_ecef[2]    = grid_pos_ecef[2];
-            surface.data[idx].pos_llh[0]     = grid_pos_llh[0];
-            surface.data[idx].pos_llh[1]     = grid_pos_llh[1];
-            surface.data[idx].pos_llh[2]     = grid_pos_llh[2];
-            surface.data[idx].normal_spec[0] = normal[0];
-            surface.data[idx].normal_spec[1] = normal[1];
-            surface.data[idx].normal_spec[2] = normal[2];
-            surface.data[idx].area_m2        = area;
-            surface.data[idx].distance_m     = distance;
-        }
-    }
-}
-
 
 /****************************************************************************/
 //

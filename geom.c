@@ -1,23 +1,3 @@
-//
-// Created by Feixiong Huang on 11/9/17.
-//
-
-//***************************************************************************
-// This file is part of the CYGNSS E2ES.
-//
-// CYGNSS E2ES is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// CYGNSS E2ES is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with CYGNSS E2ES.  If not, see <http://www.gnu.org/licenses/>.
-//
 //---------------------------------------------------------------------------
 //
 // In the E2ES, all of the satellite and specular geometry is stored in a single geometry
@@ -35,16 +15,8 @@
 void getSpecularFrameToOrbitFrameXfrm( double sat_pos[3], double sat_vel[3], double xfrmMatrix[9] );
 void getSpecularFrameToOrbitFrameXfrm_new( double sat_pos[3], double sat_vel[3], double xfrmMatrix[9] );
 void getSpecularFrameToAaronOrbitFrameXfrm( double sat_pos[3], double sat_vel[3], double xfrmMatrix[9] );
-//void getECEF2SpecularFrameXfrm( double rx_pos_ecef[3], double tx_pos_ecef[3],
-//                                double sx_pos_ecef[3], double M[9] );
-void geom_writeGeomTableFile( geometryData *gd );
-void geom_writeGeomTableFile2( orbitGeometryStruct *g );
-void geom_writeGeometryReportFile( geometryData *gd );
-int  geom_readGeometryFile(const char *filename, orbitGeometryStruct *g);
-void geom_propagateGeometry( orbitGeometryStruct *g, double time_s, double distance_km );
 
 /****************************************************************************/
-//  ...
 
 void geom_initialize(geometryData *gd, struct Geometry geom){	//read geometry information(ECEF) to gd
 
@@ -98,31 +70,6 @@ orbitGeometryStruct *geom_getOrbitData(geometryData *gd, int geomIdx ){
     return &(gd->g[geomIdx - gd->geomStartIdx]);
 }
 
-void geom_propagateGeometry( orbitGeometryStruct *g, double time_s, double distance_km ){
-
-    // solve for specular point
-    solveSpecularPtPosition(g->rx_pos_ecef, g->tx_pos_ecef, g->sx_pos_ecef, 0, 100);
-
-    // propagate satellites forward in time to solve for specular point velocity
-    double tempRx[3],tempTx[3],tempSx[3],tempSxLLH[3];
-    double timeInc_s = 1;
-    for(int i=0;i<3;i++){
-        tempRx[i] = g->rx_pos_ecef[i] + g->rx_vel_ecef[i] * timeInc_s;
-        tempTx[i] = g->tx_pos_ecef[i] + g->tx_vel_ecef[i] * timeInc_s;
-    }
-    solveSpecularPtPosition(tempRx, tempTx, tempSx, 0, 100);
-    wgsxyz2lla( tempSx, tempSxLLH );
-    for(int i=0;i<3;i++) g->sx_vel_ecef[i] = (tempSx[i]    - g->sx_pos_ecef[i]) / timeInc_s;
-    for(int i=0;i<3;i++) g->sx_vel_llh[i]  = (tempSxLLH[i] - g->sx_pos_llh[i] ) / timeInc_s;
-
-    g->sx_speed_ms = vector_norm(g->sx_vel_ecef);
-    double combinedTime_s = time_s + distance_km * 1000.0 / g->sx_speed_ms;
-    //printf(" %f %f %f \n",g->sx_speed_ms, distance_km, combinedTime_s );
-    for(int i=0;i<3;i++){
-        g->rx_pos_ecef[i] = g->rx_pos_ecef[i] + g->rx_vel_ecef[i] * combinedTime_s;
-        g->tx_pos_ecef[i] = g->tx_pos_ecef[i] + g->tx_vel_ecef[i] * combinedTime_s;
-    }
-}
 
 /****************************************************************************/
 //  Given Rx\Ts position & velocity, calculate all other geometry parameters
@@ -352,55 +299,6 @@ void getSpecularFrameToAaronOrbitFrameXfrm( double sat_pos[3], double sat_vel[3]
 //  Write geometry summary table to a text file
 /****************************************************************************/
 
-void geom_writeGeometryReportFile(geometryData *gd){
-    // write detailed geometry report file
-
-    FILE *file = fopen("geom_details.txt","w");
-    if( file == NULL ) fatalError("Could not open geom_details.txt");
-    for( int geomIdx = gd->geomStartIdx; geomIdx <= gd->geomEndIdx; geomIdx++ ){
-        orbitGeometryStruct *g = geom_getOrbitData(gd, geomIdx);
-        geom_printToLog(file, geomIdx, g);
-    }
-    fclose(file);
-}
-
-void geom_writeGeomTableFile2( orbitGeometryStruct *gd ){
-    // write ASCII data table of the primary geometry parameters
-    // suitable for loading in Matlab
-
-    FILE *file = fopen("geom_table.txt","a+");
-    if( file == NULL ) fatalError("Could not open geom_table.txt");
-    fprintf(file, "%f %f %f %f %f %f %f %f %f %f %f %f\n",
-            gd->rx_pos_ecef[0], gd->rx_pos_ecef[1], gd->rx_pos_ecef[2],
-            gd->rx_vel_ecef[0], gd->rx_vel_ecef[1], gd->rx_vel_ecef[2],
-            gd->tx_pos_ecef[0], gd->tx_pos_ecef[1], gd->tx_pos_ecef[2],
-            gd->tx_vel_ecef[0], gd->tx_vel_ecef[1], gd->tx_vel_ecef[2]);
-    fclose(file);
-}
-
-void geom_writeGeomTableFile( geometryData *gd ){
-    // write ASCII data table of the primary geometry parameters
-    // suitable for loading in Matlab
-
-    FILE *file = fopen("geom_table.txt","w");
-    if( file == NULL ) fatalError("Could not open geom_table.txt");
-    for( int geomIdx = gd->geomStartIdx; geomIdx <= gd->geomEndIdx; geomIdx++ ){
-        orbitGeometryStruct *g = geom_getOrbitData(gd, geomIdx);
-        fprintf(file, "%d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f \n",
-                geomIdx,
-                g->rx_pos_ecef[0], g->rx_pos_ecef[1], g->rx_pos_ecef[2],
-                g->rx_vel_ecef[0], g->rx_vel_ecef[1], g->rx_vel_ecef[2],
-                g->tx_pos_ecef[0], g->tx_pos_ecef[1], g->tx_pos_ecef[2],
-                g->tx_vel_ecef[0], g->tx_vel_ecef[1], g->tx_vel_ecef[2],
-                g->sx_pos_ecef[0], g->sx_pos_ecef[1], g->sx_pos_ecef[2],
-                g->rx_range_m, g->tx_range_m,
-                g->sx_angle_rad * R2D,
-                g->antennaRxGainAtSx_LHCP_dB, g->antennaTxGainAtSx_RHCP_dB,
-                0.0 );
-    }
-    fclose(file);
-}
-
 void geom_printToLog(FILE *outputPtr, int index, orbitGeometryStruct *g){
 
     fprintf(outputPtr,"\n  *******************\n");
@@ -462,39 +360,3 @@ void geom_printToLog(FILE *outputPtr, int index, orbitGeometryStruct *g){
     fprintf(outputPtr,"   Specular Bin Motion in DDM          (%f,%f) (chips/s,kHz/s)\n\n", g->ddm_delayRate_chips_per_s, g->ddm_dopplerRate_kH_per_s );
     fflush(outputPtr);
 }
-
-/****************************************************************************/
-//  Read in geometry from an ASCII file
-/****************************************************************************/
-
-/*
-int geom_readGeometryFile(const char *filename, orbitGeometryStruct *g){
-
-    // read ASCII data table from file
-    double *data;
-    int numColumns = 12;
-    int numRows = file_readASCIIData(filename, 0, data, numColumns);
-
-    // allocate memorty for geometries
-    g = (orbitGeometryStruct *)calloc(numRows, sizeof(orbitGeometryStruct));
-
-    // read values into geometry structure
-    for(int i=0;i<numRows;i++){
-        g[i].rx_pos_ecef[0] = data[ i*numColumns + 0];
-        g[i].rx_pos_ecef[1] = data[ i*numColumns + 1];
-        g[i].rx_pos_ecef[2] = data[ i*numColumns + 2];
-        g[i].tx_pos_ecef[0] = data[ i*numColumns + 3];
-        g[i].tx_pos_ecef[1] = data[ i*numColumns + 4];
-        g[i].tx_pos_ecef[2] = data[ i*numColumns + 5];
-        g[i].rx_vel_ecef[0] = data[ i*numColumns + 6];
-        g[i].rx_vel_ecef[1] = data[ i*numColumns + 7];
-        g[i].rx_vel_ecef[2] = data[ i*numColumns + 8];
-        g[i].tx_vel_ecef[0] = data[ i*numColumns + 9];
-        g[i].tx_vel_ecef[1] = data[ i*numColumns + 10];
-        g[i].tx_vel_ecef[2] = data[ i*numColumns + 11];
-
-        geom_calculateSecondaryGeometry(&(g[i]));
-    }
-    return numRows;
-}
-*/

@@ -1,22 +1,3 @@
-//
-// Created by Feixiong Huang on 11/9/17.
-//
-//***************************************************************************
-// This file is part of the CYGNSS E2ES.
-//
-// CYGNSS E2ES is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// CYGNSS E2ES is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with CYGNSS E2ES.  If not, see <http://www.gnu.org/licenses/>.
-//
 //---------------------------------------------------------------------------
 //
 // Spatial & Temportal Coordinate System Transforms

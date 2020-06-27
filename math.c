@@ -1,23 +1,3 @@
-//
-// Created by Feixiong Huang on 10/23/17.
-//
-
-//***************************************************************************
-// This file is part of the CYGNSS E2ES.
-//
-// CYGNSS E2ES is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// CYGNSS E2ES is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with CYGNSS E2ES.  If not, see <http://www.gnu.org/licenses/>.
-//
 //---------------------------------------------------------------------------
 //
 // This file contains various vector, matrix, and math routines used
@@ -146,17 +126,6 @@ void cubic_interpolation_3vector( double f0[3], double f1[3], double df0[3], dou
     cubic_interpolation(f0[1], f1[1], df0[1], df1[1], t, &(ft[1]), &(dft[1]), timeInterval_s);
     cubic_interpolation(f0[2], f1[2], df0[2], df1[2], t, &(ft[2]), &(dft[2]), timeInterval_s);
 
-}
-
-int getTimeIndicies( int numTimeSamples, double timeStart_s, double timeInc_s,
-                     double time_s, int *n0, int *n1 ){
-    *n0 = floor((time_s - timeStart_s) / timeInc_s );
-    *n1 = *n0 + 1;
-
-    if( (*n0 < 0) || (*n0 >= numTimeSamples) )
-        return 0; // time_s outside bounds
-    else
-        return 1;
 }
 
 //-----------------------------------------------------------------------------------
@@ -305,52 +274,4 @@ void matrix_invert_3x3(double A[9], double invA[9]){
     }
 
 }
-
-/*
-void testBilinear(void){
-    GLuint texture;
-
-    int width, height;
-    char * data;
-    FILE * file;
-    int wrap = 0;
-
-    // allocate buffer
-    width = 256;
-    height = 256;
-    data = malloc( width * height * 3 );
-
-
-    // allocate a texture name
-    glGenTextures( 1, &texture );
-
-    // select our current texture
-    glBindTexture( GL_TEXTURE_2D, texture );
-
-    // select modulate to mix texture with color for shading
-    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-
-    // when texture area is small, bilinear filter the closest MIP map
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                    GL_LINEAR_MIPMAP_NEAREST );
-    // when texture area is large, bilinear filter the first MIP map
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-    // if wrap is true, the texture wraps over at the edges (repeat)
-    //       ... false, the texture ends at the edges (clamp)
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-                    wrap ? GL_REPEAT : GL_CLAMP );
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-                    wrap ? GL_REPEAT : GL_CLAMP );
-
-    // build our texture MIP maps
-    gluBuild2DMipmaps( GL_TEXTURE_2D, 3, width,
-                      height, GL_RGB, GL_UNSIGNED_BYTE, data );
-
-    // free buffer
-    free( data );
-
-    //return texture;
-}
-*/
 
