@@ -386,6 +386,86 @@ void wind_loadWindField(const char *filename, windField *wf ) {
 }
 
 /****************************************************************************/
+//  Create Gradient Wind Field
+/****************************************************************************/
+
+/*
+void wind_gradientWindField(windField *wf ) {
+
+    wf->numGridPtsX   = 501;
+    wf->numGridPtsY   = 501;
+    wf->resolutionX_m = 1000;
+    wf->resolutionY_m = 1000;
+    wf->numGridPts    = wf->numGridPtsX * wf->numGridPtsY;
+
+    // allocate memory
+    fprintf(outputPtr,"   Allocating %4.2f MB for windfield data ... \n", sizeof(windFieldPixel) * wf->numGridPts / 1048576.0 );
+    wf->data = (windFieldPixel *)calloc(wf->numGridPts, sizeof(windFieldPixel));
+    if(wf->data == NULL) {
+        fputs("Error: Not enough memory to load file in wind_loadWindField\n",stderr);
+        exit(1);
+    }
+    fflush(outputPtr);
+
+    int i;
+    double val, dist, mss[5];
+
+    double windMag_ms_gradAngle_deg = getParamFromConfigFile_double("windField.windMag_ms.gradientAngle_deg");
+    double windMag_ms_rate          = getParamFromConfigFile_double("windField.windMag_ms.gradientRate_ms_per_km");
+    double windMag_ms_centerVal     = getParamFromConfigFile_double("windField.windMag_ms.centerVal_ms");
+    double windDir_deg_gradAngle_deg = getParamFromConfigFile_double("windField.windDir_deg.gradientAngle_deg");
+    double windDir_deg_rate          = getParamFromConfigFile_double("windField.windDir_deg.gradientRate_deg_per_km");
+    double windDir_deg_centerVal     = getParamFromConfigFile_double("windField.windDir_deg.centerVal_deg");
+
+    // center of wind field
+    double x0 = floor( wf->numGridPtsX / 2.0 );
+    double y0 = floor( wf->numGridPtsY / 2.0 );
+
+    // read from data file into memory
+    for(int x=0;x<wf->numGridPtsX;x++){
+        for(int y=0;y<wf->numGridPtsY;y++){
+            i = y * wf->numGridPtsX + x;
+
+            // get wind speed
+            dist = cos(windMag_ms_gradAngle_deg*D2R) * (x-x0) + sin(windMag_ms_gradAngle_deg*D2R) * (y-y0);
+            dist = dist * wf->resolutionX_m / 1000;
+            val  = windMag_ms_centerVal + dist * windMag_ms_rate;
+            if( val < 0 ){ val = 0; }
+            wf->data[i].windSpeed_ms     = val;
+
+            // get wind direction
+            dist = cos(windMag_ms_gradAngle_deg) * (x-x0) + sin(windDir_deg_gradAngle_deg) * (y-y0);
+            dist = dist * wf->resolutionX_m / 1000;
+            val  = windDir_deg_centerVal + dist * windDir_deg_rate;
+            wf->data[i].windDir_rad     = val * D2R;
+
+            wf->data[i].x = x;
+            wf->data[i].y = y;
+
+            // wind and rain field data
+            wf->data[i].windSpeed_U10_ms = 0;
+            wf->data[i].windSpeed_V10_ms = 0;
+            wf->data[i].rainRate_mmhr    = 0;
+            wf->data[i].freezingHeight_m = 0;
+            wf->data[i].lat_deg          = 0;
+            wf->data[i].lon_deg          = 0;
+            wf->data[i].rowIdx           = 0;
+            wf->data[i].colIdx           = 0;
+
+            wind_converWindToMSS( wf->data[i].windSpeed_ms, wf->data[i].windDir_rad * R2D, mss );
+
+            wf->data[i].mss_perp     = mss[0];
+            wf->data[i].mss_para     = mss[1];
+            wf->data[i].mss_x        = mss[2];
+            wf->data[i].mss_y        = mss[3];
+            wf->data[i].mss_b        = mss[4];         }
+    }
+
+    wf->isLoaded = 1;
+}
+*/
+
+/****************************************************************************/
 //  Katzberg Model - Wind Speed to MSS
 /****************************************************************************/
 
