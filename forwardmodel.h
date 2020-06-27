@@ -9,8 +9,10 @@
 #include <stdlib.h>
 #include "cygnss.h"
 
-#define ANTENNA_PATH "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx"
-#define PRN_ACF_FILE "/users/fax/CYGNSS/Data/PRN_ACF.bin"
+#define ANTENNA_PATH "/scratch/andoria/a/huang712/FM_data/All_E2ES_antennas/V6/Rx"
+#define PRN_ACF_FILE "/scratch/andoria/a/huang712/FM_data/PRN_ACF.bin"
+//#define ANTENNA_PATH "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx"
+//#define PRN_ACF_FILE "/users/fax/CYGNSS/Data/PRN_ACF.bin"
 
 struct option
 {
