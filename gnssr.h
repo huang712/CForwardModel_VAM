@@ -200,38 +200,6 @@ void wind_writeWindTableFile(windField *wf);
 
 double ddmaLUT[63000];
 
-//****************************************************************************/
-// windSeries.c
-
-typedef struct {
-    double minLat_deg, maxLat_deg, minLon_deg, maxLon_deg;
-    int numLats, numLons;
-} fieldRegion;
-
-typedef struct {
-    int numLats, numLons;
-    double *U10, *V10, *RR, *FH, *MASK;
-} fieldSet;
-
-typedef struct {
-    fieldSet domain1, domain2;
-} fieldSetMulti;
-
-typedef struct {
-    int buffer1_timeIdx, buffer2_timeIdx;
-    int buffer1_loaded, buffer2_loaded;
-    fieldSetMulti buffer1, buffer2;
-    int direction;  // 0 = time goes from buffer1 to 2, 1 = 2 to 1
-    fieldRegion region1, region2;
-} fieldBufferPair;
-
-
-typedef struct {
-    double lat_deg, lon_deg, x_m, y_m, z_m;
-} domainCenterPt;
-
-void windSeries_loadMinWSCenterFile(const char *filename, int *a, domainCenterPt **data );
-
 //******************************************************************************/
 // Surface
 
@@ -300,13 +268,10 @@ struct {
 
 // surface.c prototypes
 
-//void surface_initialize(void);
 void surface_initialize(struct metadata meta);
 void surface_cleanup(void);
 
-void surface_calcPositionOverSurface(orbitGeometryStruct *g );
 void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int fourCornerTest, struct powerParm pp);
-void surface_saveSurfaceData(char *filenamePrefix, int doOutpuFile, int doOutputPNG);
 void surface_getScatteringVector(double TSx_unit[3], double RSx_unit[3], double PUT[3], double q_vec_new[3]);
 void surface_createSurfaceMask(void);
 
@@ -315,27 +280,14 @@ void surface_calcRainAttenOnSurface(void);
 void surface_composeTotalScatPowrOnSurface(int type);
 complex double reflectionCoef(double Sxangle);
 
-int surface_loadSurfWindfieldFromSeries(orbitGeometryStruct *g , fieldBufferPair *dataBuffers, double time_s, int fourCornerTest  );
-
 void surface_loadSurfWindfield(windField *wf, int wfNum);
-void surface_getAvgsWindAtSpecular( double avgs[5], double stdvs[5], double radii[5], int type );
 
 void surface_initSpeckle(void);
 void surface_updateSpeckle(void);
 
-void surface_saveSurfaceData(char *filenamePrefix, int doOutpuFile, int doOutputPNG);
-void surface_saveTotal2PNG(char *filename);
 void surface_resetToZero(void);
-void surface_surfDataToFile(char *filenamePrefix);
-
-void surface_markRegion( windField *wf, int wfNum, double R1_km, double R2_km );
 
 double getRainAtten_abs( double theta1_rad, double theta2_rad, double h_km, double R_mmhr);
-double surface_calcSigma0(double windSpeed_ms, double sx_angle_rad, double q_vec[3] );
-int surface_quickTest(orbitGeometryStruct *geometry, fieldBufferPair *dataBuffers, double time_s, int testType );
-
-void surface_calcMinWindSpeedOverSurface(orbitGeometryStruct *g, double center_ecef[3],
-                                         double minimumWindSpeedX_ms,  double minimumWindSpeedRadius_m );
 
 void surface_saveWindToFile(void);
 void surface_saveDopplerToFile(void);
@@ -343,7 +295,6 @@ void surface_saveDelayToFile(void);
 //******************************************************************************/
 // grid.c
 
-void grid_construct(orbitGeometryStruct *geometry);
 void grid_getGridPt_sphericalEarth(int i, int j, double *sx_pos, double *grid_pos, double magSx);
 void grid_getGridPt_flatEarth(int i, int j, double *sx_pos, double *grid_pos);
 
@@ -391,11 +342,7 @@ void ddm_cleanup(void);
 
 void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobian *jacob);
 void ddm_mapSurfaceToDDM(void);
-void ddm_mapRegionToDDM(void);
 void ddm_binSurface(void);
-void ddm_setSingleBin(int doppBin, int delayBin);
-void ddm_setBox(int centerDopplerBin, int centerDelayBin, int dopplerHalfWidth, int delayHalfWidth);
-void ddm_mapDDMToSurface(void);
 
 void ddm_convolveFFT(int ambFuncType);
 void ddm_convolveH_FFT(int ambFuncType);
@@ -414,11 +361,6 @@ double lambda_prn(int prn_code, double tau_s, double tauChip_s, double cohIntTim
 complex double S(double dfreq_Hz, double cohIntTime_s);
 
 void ddm_save(struct metadata meta, struct DDMfm *ddm_fm, int realOrComplex);
-void ddm_saveToFile(const char *filename, int realOrComplex);
-void ddm_saveMetaDataToFile(const char *filename);
-void ddm_save2PNG(const char* filename, int plotType, int limType, double min, double max);
-complex double getSaveFileIndexValue( int idx );
-double getImagePixelValue( int x, int y );
 
 double ddm_getMax(void);
 double ddm_getMin(void);
@@ -472,9 +414,7 @@ struct{
 } antenna;
 
 void antenna_initialize(struct powerParm pp);
-void antenna_loadfile(const char *filename );
 double antenna_getGain_abs( antennaType at, polarizationType pt, double angles_rad[2] );
-void antenna_save2PNG( void );
 
 //******************************************************************************/
 // math.c prototypes
@@ -486,8 +426,6 @@ void cubic_interpolation( double f0, double f1, double df0, double df1,
                           double t, double *ft, double *dft, double timeInterval_s);
 void cubic_interpolation_3vector( double f0[3], double f1[3], double df0[3], double df1[3],
                                   double t, double ft[3], double dft[3], double timeInterval_s);
-int getTimeIndicies( int numTimeSamples, double timeStart_s, double timeInc_s,
-                     double time_s, int *n0, int *n1 );
 
 void cart2sph( double x[3], double y[3] );
 double cot(double z);
@@ -512,17 +450,13 @@ double matrix_det_3x3(double m[3][3]);
 void matrix_scaleAdjoint_3x3(double a[3][3],double s,double m[3][3]);
 void matrix_invert_3x3(double A[9], double invA[9]);
 
-
 //******************************************************************************/
-// file.c
-int file_readASCIIData(const char *filename, int headerLinesToSkip, double *data, int numColumns);
 
 #define fatalError(...) { char str[1000]; sprintf(str, __VA_ARGS__); printf( "%s (%s in %s, line %d)\n", str, __func__, __FILE__, __LINE__); exit(EXIT_FAILURE); }
 
 //******************************************************************************/
 //debug.c
 void printfGeometry(geometryData orbitGeometry);
-
 
 #endif //CFORWARDMODEL_GNSSR_H
 

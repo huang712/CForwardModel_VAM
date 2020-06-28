@@ -44,7 +44,6 @@ void surface_initialize(struct metadata meta){
 
 }
 
-
 void surface_cleanup(void){
     free(surface.data);
 }
@@ -389,35 +388,6 @@ complex double reflectionCoef(double Sxangle) {
     b2  = (ev1+ev2)/2; // Right-to-right circular polarization (RHCP)
     return(b1);
 }
-
-double surface_calcSigma0(double windSpeed_ms, double sx_angle_rad, double q_vec[3] ){
-    // this function assumes that the geometric and windfield properties of the
-    // surface data have already been filled in.  It calculates the sigma0
-    // using a bivariate Gaussian slope pdf
-
-    double mss_x,mss_y,mss_b,sxangle,sigma0,x,y,P,Q4,R2;
-    double mss[5];
-    wind_converWindToMSS( windSpeed_ms, 0, mss );
-
-    // evaluate slope pdf (Eqn 40 [ZV 2000])
-    mss_x    = mss[2];
-    mss_y    = mss[3];
-    mss_b    = mss[4];
-    sxangle  = sx_angle_rad;
-    x        = -q_vec[0]/q_vec[2];
-    y        = -q_vec[1]/q_vec[2];
-    P        = 1/(2*pi*sqrt(mss_x*mss_y)*sqrt(1-pow(mss_b,2))) *
-               exp(  -1/(2*(1-pow(mss_b,2))) * ( pow(x,2) / mss_x -
-                                                 2*mss_b* (x*y)/sqrt(mss_x*mss_y) + pow(y,2) / mss_y ));
-
-    // evaluate sigma0 (Eqn 34 [ZV 2000])
-    R2     = pow(cabs(reflectionCoef(sxangle)),2);
-    Q4     = pow(vector_norm(q_vec),4) / pow(q_vec[2],4);
-    sigma0 = pi * R2 * Q4 * P;
-
-    return(sigma0);
-}
-
 
 /****************************************************************************/
 //  Put all the pieces together to find the Total Scattered Power
