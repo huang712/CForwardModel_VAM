@@ -10,10 +10,6 @@
 
 double dmdx(double ws);
 
-void getSurfaceFieldDataName( int type, char *filename );
-void getSurfaceFieldData( int type, double *vals, char *filename, double minmax[2]);
-
-
 double dmdx (double ws){
     //compute derivative of MSS respect to wind speed in Katzberg model
     if(ws>=0 && ws<=3.49) {return 1.143e-3;}

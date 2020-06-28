@@ -123,28 +123,8 @@ void solveSpecularPt(double rx_pos_ecef[3], double tx_pos_ecef[3], double sx_pos
                      double rx_vel_ecef[3], double tx_vel_ecef[3], double sx_vel_ecef[3], double *sx_valid, double r_init_m );
 
 //******************************************************************************/
-// orbit.c
-
-typedef enum {STATIONARY, DYNAMICLINEAR, LISTFILE, TLE, IGS} orbitType_t;
-
-typedef struct {
-    int orbitType;       // static, dynamicLinear, listFile, TLE, IGS
-    int svID;            // sat ID for descriptive purposes
-
-    double timeStart_s;  //
-    double timeInc_s;    //
-    int numTimeSteps;    // N time steps
-
-    double* sv_pos_ecef; // Nx3
-    double* sv_vel_ecef; // Nx3
-    double* sv_time_GPS;
-    int* sv_health;     // Nx1, 1 = healthy/on, 0 = unhealthy/off
-
-    char filename[1000];      // if orbit info loaded from file, this is filename
-    char label[1000];         // label for printing to screen or log file
-
-} orbitStruct;
-
+//coord.c
+void cart2sph( double x[3], double y[3] );
 void wgslla2xyz(double x_llh[3], double x_ecef[3]);
 void wgsxyz2enu(double p_e[3] ,double x_llh[3], double x_enu[3]);
 void wgsxyz2lla( double *x_ecef, double *x_lla );
@@ -192,13 +172,10 @@ void wind_initialize(windField *wf, struct metadata meta, struct Geometry geom, 
 void wind_converWindToMSS( double windSpeedMag_ms, double windDirectionAngle_deg, double mss[5] );
 void wind_convertWindXY2MagDir( double x, double y, double *mag, double *dir_rad );
 void wind_loadWindField( const char *filename, windField *wf );
-void wind_save2PNG( windField *wf);
 
 void wind_getWindFieldAtXY( windField *wf, double x_m, double y_m, windFieldPixel *value );
-void wind_gradientWindField(windField *wf );
-void wind_writeWindTableFile(windField *wf);
 
-double ddmaLUT[63000];
+//double ddmaLUT[63000];
 
 //******************************************************************************/
 // Surface
@@ -427,7 +404,6 @@ void cubic_interpolation( double f0, double f1, double df0, double df1,
 void cubic_interpolation_3vector( double f0[3], double f1[3], double df0[3], double df1[3],
                                   double t, double ft[3], double dft[3], double timeInterval_s);
 
-void cart2sph( double x[3], double y[3] );
 double cot(double z);
 double sec(double z);
 double csc(double z);

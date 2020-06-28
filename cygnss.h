@@ -6,8 +6,6 @@
 #ifndef CFORWARDMODEL_CYGNSS_H
 #define CFORWARDMODEL_CYGNSS_H
 
-//#define DIM 85633 //number of sample in L1 data, hard code this to avoid dynamic array
-
 struct CYGNSSL1
 {
     int quality_flags;
@@ -22,11 +20,10 @@ struct CYGNSSL1
     double gps_eirp_watt;
     double noise_figue;
 
-    int ddm_peak_delay_row;
-    int ddm_peak_dopp_col;
+    //int ddm_peak_delay_row;
+    //int ddm_peak_dopp_col;
     double ddm_sp_delay_row;
     double ddm_sp_dopp_col;
-
 
     double rx_position_ecef_m[3];
     double rx_velocity_ecef_ms[3];
@@ -37,7 +34,7 @@ struct CYGNSSL1
     double sc_att_rad[3];
 
     double DDM_power[17][11];
-    double DDM_brcs[17][11];
+    //double DDM_brcs[17][11];
 };
 
 void readL1data(char L1dataFilename[], int sampleIndex, int ddm_index, struct CYGNSSL1 *l1data);

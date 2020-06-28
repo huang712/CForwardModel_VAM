@@ -9,6 +9,7 @@
 #include "gnssr.h"
 #include "forwardmodel.h"
 
+/*
 void ddmaLUT_initialize(void){
     //added by Feixiong
     //load DDMA LUT from CYGNSS
@@ -25,6 +26,7 @@ void ddmaLUT_initialize(void){
 
     fclose(file);
 }
+*/
 
 void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField iwf, double grid_resolution){
 

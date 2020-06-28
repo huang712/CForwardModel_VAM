@@ -183,7 +183,7 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
 
     //throw repeated index in bi_index1
     int *a = (int *)calloc(iwf.numPts,sizeof(int)); //array to store occurence times of each index;
-    memset(a,0,sizeof(a));
+    memset(a,0,sizeof(*a));
     //int a[2000]={0};  //array to store occurence times of each index; length must be larger than all bi_index1[
     for (i=0;i<numSurfacePt1*4;i++){
         a[bi_index1[i]]=a[bi_index1[i]]+1;

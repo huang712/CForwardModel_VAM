@@ -58,8 +58,8 @@ void readL1data(char L1dataFilename[], int sampleIndex, int ddm_index, struct CY
 
     l1data->utc_sec = readnc_int_1d(ncid, "ddm_timestamp_utc", sampleIndex);
     l1data->quality_flags = readnc_int_2d(ncid, "quality_flags", sampleIndex, ddm_index);
-    l1data->ddm_peak_delay_row = readnc_int_2d(ncid, "brcs_ddm_peak_bin_delay_row", sampleIndex, ddm_index);
-    l1data->ddm_peak_dopp_col = readnc_int_2d(ncid, "brcs_ddm_peak_bin_dopp_col", sampleIndex, ddm_index);
+    //l1data->ddm_peak_delay_row = readnc_int_2d(ncid, "brcs_ddm_peak_bin_delay_row", sampleIndex, ddm_index);
+    //l1data->ddm_peak_dopp_col = readnc_int_2d(ncid, "brcs_ddm_peak_bin_dopp_col", sampleIndex, ddm_index);
     l1data->ddm_sp_delay_row = readnc_float_2d(ncid, "brcs_ddm_sp_bin_delay_row", sampleIndex, ddm_index);
     l1data->ddm_sp_dopp_col = readnc_float_2d(ncid, "brcs_ddm_sp_bin_dopp_col", sampleIndex, ddm_index);
     l1data->index = sampleIndex;
