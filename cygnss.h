@@ -44,6 +44,6 @@ int readnc_int_2d(int ncid, char varName[], int index, int spNum);
 float readnc_float_1d(int ncid, char varName[], int index);
 float readnc_float_2d(int ncid, char varName[], int index, int ddm_index);
 
-void DDMobs_saveToFile(struct CYGNSSL1 l1data, int index, int pathType);
+void DDMobs_saveToFile(struct CYGNSSL1 l1data, int index, int pathType, char saveDir[1000]);
 
 #endif //CFORWARDMODEL_CYGNSS_H

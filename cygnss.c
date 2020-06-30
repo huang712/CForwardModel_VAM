@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "cygnss.h"
 #include <netcdf.h>
+#include <string.h>
 
 #define ERR(e) {printf("Error: %s\n", nc_strerror(e));}
 
@@ -27,7 +28,7 @@ void readL1data(char L1dataFilename[], int sampleIndex, int ddm_index, struct CY
     if ((retval = nc_inq_varid(ncid, "spacecraft_num", &sc_num_id))) ERR(retval);
     if ((retval = nc_get_var_int(ncid, sc_num_id, &l1data->sc_num))) ERR(retval);
 
-    //read DDM power
+    //read DDM power (just for debug, not big cost on computation)
     size_t start[4]={sampleIndex,ddm_index,0,0};
     size_t count[4]={1,1,17,11};
     int power_analog_id;
@@ -124,10 +125,12 @@ float readnc_float_2d(int ncid, char varName[], int index, int ddm_index){
     return var;
 }
 
-void DDMobs_saveToFile(struct CYGNSSL1 l1data, int index, int pathType) {
+void DDMobs_saveToFile(struct CYGNSSL1 l1data, int index, int pathType, char saveDir[1000]) {
 
     double val;
     char filename[50];
+    char temp[1000];
+    strcpy(temp,saveDir);
 
     FILE *outp;
     switch(pathType){
@@ -137,6 +140,10 @@ void DDMobs_saveToFile(struct CYGNSSL1 l1data, int index, int pathType) {
         case 1:
             sprintf(filename, "DDMobs/DDMobs%d.dat", index);
             outp = fopen(filename, "wb");
+            break;
+        case 2:
+            strcat(temp, "DDMobs.dat");
+            outp = fopen(temp,"wb");
             break;
     }
 

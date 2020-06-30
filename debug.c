@@ -3,6 +3,26 @@
 //
 
 #include "gnssr.h"
+void printGMF(){
+    printf("a0 = %f  ",GMF.a0);
+    printf("a1 = %f  ",GMF.a1);
+    printf("a2 = %f  ",GMF.a2);
+    printf("\n");
+    printf("b0 = %f  ",GMF.b0);
+    printf("b1 = %f  ",GMF.b1);
+    printf("b2 = %f  ",GMF.b2);
+    printf("\n");
+    printf("c0 = %f  ",GMF.c0);
+    printf("c1 = %f  ",GMF.c1);
+    printf("c2 = %f  ",GMF.c2);
+    printf("\n");
+    printf("d0 = %f  ",GMF.d0);
+    printf("d1 = %f  ",GMF.d1);
+    printf("\n");
+    printf("tras_u_fds = %f  ",GMF.trans_u_fds);
+    printf("trans_u_yslf = %f  ",GMF.trans_u_yslf);
+    printf("\n");
+}
 
 void printfGeometry(geometryData orbitGeometry){
     printf("tx_pos = %f   ",orbitGeometry.g[0].tx_pos_ecef[0]);

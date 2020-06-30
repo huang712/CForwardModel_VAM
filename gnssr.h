@@ -1,3 +1,12 @@
+// be careful about SURF index
+// 1. wind_initialize
+// 2. wind_interpolated
+// 3. surface_calcGeomOverSurface
+// 4. gnssr.h SURFINDEX = i*numGridPtsY + j
+//
+
+// Details in EKF paper
+//
 
 #ifndef CFORWARDMODEL_GNSSR_H
 #define CFORWARDMODEL_GNSSR_H
@@ -15,11 +24,6 @@
 #include <sys/time.h>
 #include "forwardmodel.h"
 
-//#include "telemetry.h"
-
-#define VERBOSE_LEVEL 2
-#define VERSION 1.10
-
 #define speedlight 2.99792458e8 // speed of light (m/s)
 #define pi 3.141592653589793
 #define L1 1575.42e6
@@ -27,21 +31,38 @@
 #define GPS_CA_CHIP_LENGTH 293.05   // meters
 #define R2D 57.295779513082320876798154814105  // radians to degrees
 #define D2R 1.0/R2D // degrees to radians
-#define OFF 0
-#define ON 1
 #define chipRate_cs 1.023e6 // chips per second
 #define omega0 7.2921158553e-5 //earth rotation in rad/s
 
-#define upsamplingFactor 10  //upsamplingFactor of receiver antenna pattern
+#define upsamplingFactor 10  // upsamplingFactor of receiver antenna pattern
 
 FILE *outputPtr, *errPtr, *consolePtr;
 
 
-//******************************************************************************/
+//***** Global variable *******************************************************************/
 //grid transformation
 int bi_index0[14400][4];  // for 1km in SURF
 double bi_weight0[14400][4]; // for 1km in SURF
+int sp_index; //index of specular point on the 120 X 120 grid (global variable)
 
+//******************************************************************************/
+//GMF.c
+double GMF_converWindToMSS( double windSpeedMag_ms, double sp_sxangle, double sxangle);
+void GMF_init(double sp_sxangle);
+double GMF_getCoef(char [], double inc_angle_degree);
+double get_gfds(double u);
+double get_gyslf(double u);
+double get_g(double u);
+double get_dgfds(double u);
+double get_dgyslf(double u);
+double get_dg(double u);
+double get_dmdx_GMF(double R2, double u);
+
+struct
+{
+    double a0,a1,a2,b0,b1,b2,c0,c1,c2,d0,d1;
+    double trans_u_fds, trans_u_yslf;
+} GMF;
 
 // Geometry (geom.c)
 
@@ -104,12 +125,11 @@ typedef struct {
     int numGeometries, geomStartIdx, geomEndIdx;
 } geometryData;
 
-void geom_printToLog(FILE *outputPtr, int index, orbitGeometryStruct *g);
+void geom_printToLog(FILE *outputPtr, int index, orbitGeometryStruct *g); // keep it as it may be useful
 
 void getECEF2SpecularFrameXfrm( double rx_pos_ecef[3], double tx_pos_ecef[3], double sx_pos_ecef[3], double M[9]);
 void geom_calculateSecondaryGeometry( orbitGeometryStruct *g );
 void geom_initialize(geometryData *gd, struct Geometry geom);
-void geom_readFromConfigFile(orbitGeometryStruct *geom, int geometryCaseIdx );
 void geom_getRelativeAngleInFrame( double origin[3], double pos[3] , double M[9], double angles_rad[2] );
 orbitGeometryStruct *geom_getOrbitData(geometryData *gd, int geomIdx );
 
@@ -132,12 +152,6 @@ void wgsxyz2lla( double *x_ecef, double *x_lla );
 //******************************************************************************/
 // wind.c
 
-typedef struct {
-    int numX, numY;
-    double resX, resY;
-    double startX, startY;
-} mapDef;
-
 typedef struct{
     double windSpeed_U10_ms, windSpeed_V10_ms;
     double rainRate_mmhr, freezingHeight_m;
@@ -154,16 +168,12 @@ typedef struct{
     int  numGridPtsX, numGridPtsY, numGridPts;  // num pixels
     double resolutionX_m, resolutionY_m;
 
-    int isLoaded;
     windFieldPixel *data;   //structure in structrure
-    mapDef map,map2;
     int type; // 1 = uniform, 2 = file
 
     // for specular locations
     int locType, locLoaded, locNumPts, locCurrentPt, locStartIdx, locEndIdx;
-    double *loc_rowIdx, *loc_colIdx;
 
-    double minimumWindSpeed_ms;
 } windField;
 
 void ddmaLUT_initialize(void);
@@ -171,8 +181,6 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
 void wind_initialize(windField *wf, struct metadata meta, struct Geometry geom, struct inputWindField iwf);
 void wind_converWindToMSS( double windSpeedMag_ms, double windDirectionAngle_deg, double mss[5] );
 void wind_convertWindXY2MagDir( double x, double y, double *mag, double *dir_rad );
-void wind_loadWindField( const char *filename, windField *wf );
-
 void wind_getWindFieldAtXY( windField *wf, double x_m, double y_m, windFieldPixel *value );
 
 //double ddmaLUT[63000];
@@ -216,10 +224,6 @@ typedef struct{
     // mask portion of surface outside complete annuli
     double mask;
 
-    double range_m, minimumWindSpeed_ms;
-
-    double regionMarker;
-
 } surfacePixel;
 
 // global that holds surface parameters and data
@@ -228,7 +232,6 @@ struct {
     double width_m, height_m, resolution_m;
     int surfaceCurvatureType;
     int speckleType;
-    double avgWindSpeed10km_ms, avgWindSpeed20km_ms, avgWindSpeed30km_ms;
 
     // X,Y coordinates of specular point in meteres in the master wind field
     double specularLoactionX_m, specularLoactionY_m;
@@ -357,7 +360,6 @@ void ddm_store(void);
 void ddm_restore(void);
 void ddm_scale(double c);
 void ddm_h_scale(double c);
-int ddm_checkNAN(void);
 double ddm_getRMS(void);
 double ddm_integrate(void);
 
@@ -433,6 +435,7 @@ void matrix_invert_3x3(double A[9], double invA[9]);
 //******************************************************************************/
 //debug.c
 void printfGeometry(geometryData orbitGeometry);
+void printGMF();
 
 #endif //CFORWARDMODEL_GNSSR_H
 

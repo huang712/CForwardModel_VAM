@@ -14,6 +14,10 @@
 #define ANTENNA_PATH "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx"
 #define PRN_ACF_FILE "/users/fax/CYGNSS/Data/PRN_ACF.bin"
 
+#define GMF_PATH "/users/fax/CYGNSS/Data/GMF_data/"
+#define GMF_OnOff 1 // if use modified CYGNSS GMF model
+#define fastMode_OnOff 0 // 1 for fast mode (in initialization.c)
+
 struct option
 {
     int JacobOnOff;
@@ -152,13 +156,10 @@ void forwardModel(struct metadata meta, struct powerParm pp,
 //initialization.c : initialization functions
 void init_metadata(struct CYGNSSL1 l1data, struct metadata *meta);
 void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp);
-void init_inputWindField_core(char windFileName[], struct inputWindField *iwf);
-void init_inputWindField_synoptic(char windFileName[], struct inputWindField *iwf);
 void init_inputWindField_data(char dataName[], struct inputWindField *iwf, struct windInfo);
 void init_Geometry(struct CYGNSSL1 l1data, struct Geometry *geom);
 void init_DDM(struct CYGNSSL1 l1data, struct DDMfm *ddm_fm);
 void init_Jacobian(struct Jacobian *jacob);
-char* getRxAntenna0(int sc_num, int ddm_ant);
 char* getRxAntenna(int sc_num, int ddm_ant);
 
 //saveFile.c : file saving functions (for debug)

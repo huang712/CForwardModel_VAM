@@ -9,25 +9,6 @@
 #include "gnssr.h"
 #include "forwardmodel.h"
 
-/*
-void ddmaLUT_initialize(void){
-    //added by Feixiong
-    //load DDMA LUT from CYGNSS
-    //ws = 0.05:0.1:69.95
-    //theta = 1:90
-    FILE *file;
-    char *filename = "../../Data/ddmaLUTv11.bin";
-    file = fopen(filename,"rb");
-    if (file == NULL){
-        printf("fail to open ddmaLUT file\n");
-        exit(1);
-    }
-    fread(ddmaLUT,sizeof(double),63000,file);
-
-    fclose(file);
-}
-*/
-
 void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField iwf, double grid_resolution){
 
     //interpolate from iwf.data[] to wf.data[]
@@ -45,7 +26,7 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
     dtheta = d/r_sp;
 
     numX = wf->numGridPtsX;
-    numY = wf->numGridPtsX;
+    numY = wf->numGridPtsY;
     numPts = wf->numGridPts;
 
     double *PUTx, *PUTy, *PUTz; //coordinates of all patches on specular frame
@@ -55,11 +36,12 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
 
 
     //First rorate along Y for phi, then along X for theta
-    for (int i = 0; i < numY; i++){
-        for(int j = 0;j < numX;j++){
+    //important! order of index, reference in the EKF paper
+    for (int i = 0; i < numX; i++){
+        for(int j = 0;j < numY;j++){
             phi = (numY/2-i) * dphi;
             theta= (numX/2-j) * dtheta;
-            ind = i * numY + j;
+            ind = SURFINDEX(i, j);
             PUTx[ind] = r_sp * sin(phi);
             PUTy[ind] = -r_sp * cos(phi) * sin(theta);
             PUTz[ind] = r_sp * cos(phi) * cos(theta);
@@ -196,15 +178,14 @@ void wind_initialize(windField *wf, struct metadata meta, struct Geometry geom, 
     wf->resolutionY_m = meta.grid_resolution_m;
     wf->numGridPts    = wf->numGridPtsX * wf->numGridPtsY;
 
-    //wf->isLoaded = 1;
-    int N = wf->numGridPts;//8100
+    int N = wf->numGridPts; //14400
     wf->data = (windFieldPixel *)calloc(N, sizeof(windFieldPixel)); //initiallize this array with length of N
 
     //initialize the index
-    for(int y = 0; y < wf->numGridPtsY; y++){
-        for(int x = 0; x < wf->numGridPtsX; x++) {
-            wf->data[y * wf->numGridPtsX + x].x = x;
-            wf->data[y * wf->numGridPtsX + x].y = y;
+    for(int i = 0; i < wf->numGridPtsX; i++){
+        for(int j = 0; j < wf->numGridPtsY; j++) {
+            wf->data[SURFINDEX(i, j)].x = i;
+            wf->data[SURFINDEX(i, j)].y = j;
         }
     }
 
@@ -243,133 +224,27 @@ void wind_getWindFieldAtXY( windField *wf, double x_m, double y_m, windFieldPixe
 }
 
 /****************************************************************************/
-//  Load binary wind field file (Nature Run)
+//  Wind Speed to MSS
 /****************************************************************************/
 
-void wind_loadWindField(const char *filename, windField *wf ) {
-
-    FILE *file;
-    size_t numBytesReadFromFile;
-    double wind_Xcomp, wind_Ycomp, mag_abs, dir_rad, mss[5];
-
-    /*
-    if( wf->isLoaded == 1 ) {
-        free(wf->data);
-        wf->isLoaded = 0;
-    }*/
-
-    // open file
-    fprintf(outputPtr,"   Loading windfield file: %s\n", filename);
-    file = fopen(filename,"rb");
-    if (!file) {
-        printf("Error: Couldn't open file in wind_loadWindField\n");
-        return;
-    }
-
-    // read windfield dimensions
-    double a,b;
-    fread(&a,sizeof(double),1,file);
-    fread(&b,sizeof(double),1,file);
-    wf->numGridPtsX   = floor(a);
-    wf->numGridPtsY   = floor(b);
-    wf->resolutionX_m = 1000;
-    wf->resolutionY_m = 1000;
-    wf->numGridPts    = wf->numGridPtsX * wf->numGridPtsY;
-    fprintf(outputPtr,"   Headers says its %d x %d (X x Y) \n", wf->numGridPtsX, wf->numGridPtsY);
-
-    // allocate memory
-    fprintf(outputPtr,"   Allocating %4.2f MB for windfield data ... \n", sizeof(windFieldPixel) * wf->numGridPts / 1048576.0 );
-    wf->data = (windFieldPixel *)calloc(wf->numGridPts, sizeof(windFieldPixel));
-    if(wf->data == NULL) {
-        fputs("Error: Not enough memory to load file in wind_loadWindField\n",stderr);
-        exit(1);
-    }
-
-    // read from data file into memory
-    int N = wf->numGridPts;
-    int M = 8; // num fields
-    double *tempBuffer = (double *)calloc(N*M, sizeof(double));
-    numBytesReadFromFile = fread(tempBuffer,sizeof(double),N*M,file);
-    if (numBytesReadFromFile != (M*N)) {
-        printf("Error: Reading error in wind_loadWindField: read %lu, expected %d \n", numBytesReadFromFile, N*M);
-        free(wf->data);
-        exit(3);
-    }
-    for(int i=0;i<N;i++){
-        // wind and rain field data
-        wf->data[i].windSpeed_U10_ms = tempBuffer[0*N+i];
-        wf->data[i].windSpeed_V10_ms = tempBuffer[1*N+i];
-        wf->data[i].rainRate_mmhr    = tempBuffer[2*N+i];
-        wf->data[i].freezingHeight_m = tempBuffer[3*N+i];
-
-        // used for debugging purposes
-        wf->data[i].lat_deg          = tempBuffer[4*N+i];
-        wf->data[i].lon_deg          = tempBuffer[5*N+i];
-        wf->data[i].rowIdx           = tempBuffer[6*N+i];
-        wf->data[i].colIdx           = tempBuffer[7*N+i];
-    }
-    free(tempBuffer);
-    fclose(file);
-    wf->isLoaded = 1;
-
-    // set x,y surface coordinates (for debugging purposes)
-    for(int y = 0; y < wf->numGridPtsY; y++){
-        for(int x = 0; x < wf->numGridPtsX; x++) {
-            wf->data[y * wf->numGridPtsX + x].x = x;
-            wf->data[y * wf->numGridPtsX + x].y = y;
-        }
-    }
-
-    // get magnitude and direction
-    for(int i = 0; i < wf->numGridPts; i++){
-        wind_Xcomp = wf->data[i].windSpeed_U10_ms;
-        wind_Ycomp = wf->data[i].windSpeed_V10_ms;
-        wind_convertWindXY2MagDir( wind_Xcomp, wind_Ycomp, &mag_abs, &dir_rad );
-        wf->data[i].windSpeed_ms = mag_abs;
-        wf->data[i].windDir_rad  = dir_rad;
-    }
-
-    // limit minimum wind
-    if( wf->minimumWindSpeed_ms > 0){
-        for(int i = 0; i < wf->numGridPts; i++){
-            if( wf->data[i].windSpeed_ms < wf->minimumWindSpeed_ms){
-                double c = wf->minimumWindSpeed_ms / wf->data[i].windSpeed_ms;
-                wf->data[i].windSpeed_ms     *= c;
-                wf->data[i].windSpeed_U10_ms *= c;
-                wf->data[i].windSpeed_V10_ms *= c;
-            }
-        }
-    }
-
-    // solve for mss
-    for(int i = 0; i < wf->numGridPts; i++){
-        wind_converWindToMSS( wf->data[i].windSpeed_ms, wf->data[i].windDir_rad * R2D, mss );
-        wf->data[i].mss_perp     = mss[0];
-        wf->data[i].mss_para     = mss[1];
-        wf->data[i].mss_x        = mss[2];
-        wf->data[i].mss_y        = mss[3];
-        wf->data[i].mss_b        = mss[4];
-    }
-}
-
-/****************************************************************************/
-//  Katzberg Model - Wind Speed to MSS
-/****************************************************************************/
+//void wind_converWindToMSS_CYG( double windSpeedMag_ms, double windDirectionAngle_deg, double mss[5] ){
+//    // Modified model from CYGNSS GMF
+//
+//    double f, sigma2_sx0, sigma2_sy0, sigma2_sx, sigma2_sy, sxsy, b_xy, phi0_rad;
+//}
 
 void wind_converWindToMSS( double windSpeedMag_ms, double windDirectionAngle_deg, double mss[5] ) {	//wind to MSS (62)-(67)
+    // Katzberg Model
 
     double f, sigma2_sx0, sigma2_sy0, sigma2_sx, sigma2_sy, sxsy, b_xy, phi0_rad;
 
-    //*********************************************************************************
-    // Katzberg Model
-
     if(windSpeedMag_ms <= 3.49)
         f = windSpeedMag_ms;
-    else
-    if( (windSpeedMag_ms > 3.49 ) & (windSpeedMag_ms <= 46) )
+    else if( (windSpeedMag_ms > 3.49 ) && (windSpeedMag_ms <= 46) )
         f = 6*log(windSpeedMag_ms) - 4.0;
-    else
-        f = ((1.855e-4) * windSpeedMag_ms+0.0185) / (3.16e-3) / 0.45;
+    else {
+        f = ((1.855e-4) * windSpeedMag_ms + 0.0185) / (3.16e-3) / 0.45;
+    }
 
     sigma2_sx0 = 0.45*(0.003 + (1.92e-3)*f);  // perp component
     sigma2_sy0 = 0.45*((3.16e-3)*f);          // parallel component
@@ -378,10 +253,10 @@ void wind_converWindToMSS( double windSpeedMag_ms, double windDirectionAngle_deg
     // Rotate mss into X-Y coordinate system using equations (44),(45),(46) and (42)
     // from Zavorotny & Voronovich 2000.
 
-    phi0_rad   = windDirectionAngle_deg * D2R;
+    phi0_rad   = windDirectionAngle_deg * D2R; // V10=0, always 90 degree
 
-    sigma2_sx  = sigma2_sx0 * pow(cos(phi0_rad),2) + sigma2_sy0 * pow(sin(phi0_rad),2);
-    sigma2_sy  = sigma2_sy0 * pow(cos(phi0_rad),2) + sigma2_sx0 * pow(sin(phi0_rad),2);
+    sigma2_sx  = sigma2_sx0 * pow(cos(phi0_rad),2) + sigma2_sy0 * pow(sin(phi0_rad),2);  //sy0
+    sigma2_sy  = sigma2_sy0 * pow(cos(phi0_rad),2) + sigma2_sx0 * pow(sin(phi0_rad),2);  //sx0
     sxsy       = (sigma2_sy0 - sigma2_sx0)*cos(phi0_rad)*sin(phi0_rad);
     b_xy       = sxsy / sqrt( sigma2_sx*sigma2_sy );
 

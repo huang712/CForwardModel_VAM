@@ -86,7 +86,6 @@ void Jacobian_saveToFile(struct Jacobian jacob, int index, int pathType, char sa
 
 
 void indexLL_saveToFile(struct Jacobian jacob, char saveDir[1000]) {
-    //FILE *outp = fopen("PtsVec.dat", "wb");
     char temp[1000];
     strcpy(temp,saveDir);
     strcat(temp, "indexLL.dat");

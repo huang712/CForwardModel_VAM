@@ -8,9 +8,9 @@
 #include "forwardmodel.h"
 #include "gnssr.h"
 
-double dmdx(double ws);
+double get_dmdx(double ws);
 
-double dmdx (double ws){
+double get_dmdx (double ws){
     //compute derivative of MSS respect to wind speed in Katzberg model
     if(ws>=0 && ws<=3.49) {return 1.143e-3;}
     else if(ws>3.49 && ws<=46) {return 6.858e-3/ws;}
@@ -19,7 +19,6 @@ double dmdx (double ws){
         printf("Negative wind speed\n"); exit(0);
     }
 }
-
 
 void surface_initialize(struct metadata meta){
     surface.numGridPtsX = meta.numGridPoints[0];
@@ -32,6 +31,7 @@ void surface_initialize(struct metadata meta){
     surface.numGridPts = surface.numGridPtsX  * surface.numGridPtsY;
     surface.specularLoactionX_m = floor( surface.numGridPtsX / 2.0 ) * surface.resolution_m;
     surface.specularLoactionY_m = floor( surface.numGridPtsY / 2.0 ) * surface.resolution_m;
+    sp_index=meta.numGridPoints[0]*(meta.numGridPoints[1]/2-1)+meta.numGridPoints[0]/2-1; // specular index
 
     // allocate surface buffers
     surface.data     = (surfacePixel *) calloc( surface.numGridPts, sizeof(surfacePixel) );
@@ -175,7 +175,7 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
                 powerFactor = TxP * pow(lambda,2) * TxG * RxG * (pow((30e3) / 2,2)*pi) * normal * extra * pathloss / pow(4*pi,3);
 
             // save surface data of eahc grid to buffer
-            int idx = SURFINDEX(i, j);   //=i * surface.numGridPtsY + j   i*90+j
+            int idx = SURFINDEX(i, j);   //=i * surface.numGridPtsY + j   i*120+j
             surface.data[idx].delay_s       = ((R1+R2)- geometry->specularDistance_m) / speedlight;
             //surface.data[idx].doppler_Hz    = geometry->specularDoppler_Hz - doppler_Hz;
             surface.data[idx].doppler_Hz    =  doppler_Hz - geometry->specularDoppler_Hz;
@@ -280,8 +280,6 @@ void surface_getScatteringVector(double TSx_unit[3], double RSx_unit[3], double 
     q_vec_new[2] = K*qn;
 }
 
-
-
 /****************************************************************************/
 //  Evaluate Sigma0 Over Surface
 /****************************************************************************/
@@ -292,6 +290,14 @@ void surface_calcSigma0OnSurface(int windModelType){	//compute RCS at surface (6
     // using a bivariate Gaussian slope pdf
 
     double ws,mss_x,mss_y,mss_b,sxangle,q_vec[3],sigma0,sigma0_dP,x,y,P,Q4,R2,dP;
+    double mss_iso, sp_sxangle, dmdx;
+    sp_sxangle = surface.data[sp_index].sx_angle_rad;
+
+    if (GMF_OnOff==1){
+        GMF_init(sp_sxangle);
+    }
+
+    printf("WS at SP = %f m/s\n",surface.windData[sp_index].windSpeed_ms);
 
     for (int idx = 0; idx < surface.numGridPts; idx++) {
 
@@ -300,25 +306,36 @@ void surface_calcSigma0OnSurface(int windModelType){	//compute RCS at surface (6
         mss_x    = surface.windData[idx].mss_x;
         mss_y    = surface.windData[idx].mss_y;
         mss_b    = surface.windData[idx].mss_b;
-        sxangle  = surface.data[idx].sx_angle_rad;  //incidence angle
+        sxangle  = surface.data[idx].sx_angle_rad;  //elevation angle
         q_vec[0] = surface.data[idx].q[0];
         q_vec[1] = surface.data[idx].q[1];
         q_vec[2] = surface.data[idx].q[2];
         x        = -q_vec[0]/q_vec[2];
         y        = -q_vec[1]/q_vec[2];
-        double mss_iso=(mss_x+mss_y)/2;
+
+//        printf("sp_inc = %f, inc = %f\n",90-R2D*sp_sxangle, 90-R2D*sxangle);
+//        printf("ws = %f\n",ws);
+//        printf("mss = %f\n",mss_iso);
 
         // evaluate sigma0 (Eqn 34 [ZV 2000])
         R2     = pow(cabs(reflectionCoef(sxangle)),2);   //reflection coefficient
         Q4     = pow(vector_norm(q_vec),4) / pow(q_vec[2],4);
 
+        if (GMF_OnOff == 1){
+            mss_iso = GMF_converWindToMSS(ws, sp_sxangle, sxangle); //modified CYGNSS model
+            dmdx = get_dmdx_GMF(R2,ws);
+        }
+        else {
+            mss_iso=(mss_x+mss_y)/2; //Katzberg model
+            dmdx = get_dmdx(ws);
+        }
+
+        //printf("ws = %f\n",ws);
+        //printf("%f %f\n",get_dmdx_GMF(R2,ws),get_dmdx(ws));
+
         if (windModelType == 0){    //isotropic model
             mss_b=0;
             P=1/(2*pi*mss_iso) * exp(-(pow(x,2)+pow(y,2))/(2*mss_iso));
-
-            //P = 1/(2*pi*sqrt(mss_iso*mss_iso)*sqrt(1-pow(mss_b,2))) *
-            //    exp(  -1/(2*(1-pow(mss_b,2))) * ( pow(x,2) / mss_iso -
-            //                                      2*mss_b* (x*y)/sqrt(mss_iso*mss_iso) + pow(y,2) / mss_iso )); // PDF (61)
             sigma0 = pi * R2 * Q4 * P;    //RCS  (68)
         }
         if (windModelType == 1){    ////anisotropic model
@@ -330,21 +347,9 @@ void surface_calcSigma0OnSurface(int windModelType){	//compute RCS at surface (6
 
         dP       = -1/(2*pi) * ( 1/pow(mss_iso,2) +                   //dP for isotropic mss
                                  (-1.0/2 * (pow(x,2) + pow(y,2))/pow(mss_iso,3) ) ) *
-                   exp(  -1.0/2 * ( ( pow(x,2) + pow(y,2) )/ mss_iso )) * dmdx(ws);
+                   exp(  -1.0/2 * ( ( pow(x,2) + pow(y,2) )/ mss_iso )) * dmdx;
 
         sigma0_dP = pi * R2 * Q4 * dP;  //derivative of sigma0 (used for H matrix)
-
-        //printf("s2 = %f\n",sqrt(pow(x,2) + pow(y,2)));
-        //printf("test = %f\n",-1/2.0);
-        // if use DDMA LUT, need to first ddmaLUT_initialize();
-        /*
-        double sigma0_GMF;
-        int index_ws, index_theta;
-        double ws = surface.windData[idx].windSpeed_ms;
-        index_ws = (int) round((ws-0.05)/0.1)+1; //index=1,2,3...
-        index_theta = (int) round(sxangle * 180/pi);
-        sigma0_GMF = ddmaLUT[(index_ws-1)*90+index_theta-1];
-        */
 
         /*
         if (idx==0 ||idx == 7260 || idx==14399){
@@ -373,15 +378,15 @@ complex double reflectionCoef(double Sxangle) {
     // (see Eqs.(A11-A13) in [1]):
     double st,ct,tet;
     double complex eps,esq,ev1,ev2,b1,b2;
-    tet = Sxangle;
+    tet = Sxangle; //elevation angle, = 90-inc_angle
     eps = 74.62 + I*51.92;
     st  = sin(tet);
     ct  = cos(tet);
     esq = csqrt(eps-pow(st,2));
-    ev1 = (eps*ct-esq)/(eps*ct+esq); //corrected by Feixiong
-    ev2 = (ct-esq)/(ct+esq);        //corrected by Feixiong
-    b1  = (ev1-ev2)/2; // Right-to-left circular polarization (LHCP)
-    b2  = (ev1+ev2)/2; // Right-to-right circular polarization (RHCP)
+    ev1 = (eps*st-esq)/(eps*st+esq); //Rvv
+    ev2 = (st-esq)/(st+esq);        //Rhh
+    b1  = (ev1-ev2)/2; // Rrl, Rlr Right-to-left circular polarization (LHCP)
+    b2  = (ev1+ev2)/2; // Rrr, Rll Right-to-right circular polarization (RHCP)
     return(b1);
 }
 

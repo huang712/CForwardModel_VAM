@@ -136,7 +136,7 @@ void geom_calculateSecondaryGeometry( orbitGeometryStruct *g ){
     // calculate elevation angles (hopefully these should all be the same...)
     g->rx_angle_rad = asin(RSx_unit[2]);
     g->tx_angle_rad = asin(TSx_unit[2]);
-    g->sx_angle_rad = acos(-vector_dot_product(TSx_unit,RSx_unit))/2;
+    g->sx_angle_rad = acos(-vector_dot_product(TSx_unit,RSx_unit))/2; // elevation angle; = 90-incidence angle
 
     // calculate Rx and Tx orbit frames transforms (as defined by Andrew)
     getSpecularFrameToOrbitFrameXfrm_new( g->rx_pos, g->rx_vel, g->SPEC_TO_RX_ORB_FRAME );	//

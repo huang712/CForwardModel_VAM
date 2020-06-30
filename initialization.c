@@ -13,12 +13,12 @@ void init_metadata(struct CYGNSSL1 l1data, struct metadata *meta) {
     meta->meas_ddm_sp_index[1] = l1data.ddm_sp_dopp_col;
 
     //default numbers
-    meta->numDelaybins = 100;    //100  400
-    meta->numDopplerbins = 200;  //200 400
+    meta->numDelaybins = 100*fastMode_OnOff+400*(!fastMode_OnOff);    //100  400
+    meta->numDopplerbins = 200*fastMode_OnOff+400*(!fastMode_OnOff);;  //200 400
     meta->delayRez_chips = 0.0510345;
     meta->dopplerRes_Hz = 25;  //25
     meta->resample_startBin[0] = 0;
-    meta->resample_startBin[1] = 0; //0 100
+    meta->resample_startBin[1] = 0*fastMode_OnOff+100*(!fastMode_OnOff);; //0 100
     meta->resample_resolution_bins[0] = 5;
     meta->resample_resolution_bins[1] = 20;
     meta->resample_numBins[0] = 17;
@@ -31,13 +31,15 @@ void init_metadata(struct CYGNSSL1 l1data, struct metadata *meta) {
     meta->excess_noisefloor_dB = 0;
 
     meta->grid_resolution_m = 1000;
-    meta->numGridPoints[0] = 120; // this must be 120 x 120 km for incidence angle = 60 deg.
-    meta->numGridPoints[1] = 120;
+
+    // this must be 120 x 120 km for incidence angle = 60 deg.
+    // If change this, then also need to change bi_index0 and bi_weight0 in gnssr.h
+    meta->numGridPoints[0] = 120; // grid points in X direction
+    meta->numGridPoints[1] = 120; // grid points in Y direction, X,Y direction are defined in the EKF paper
     meta->surfaceCurvatureType = 1;//1 = spherical, 2 = flat
 
     meta->prn_code = l1data.prn_code;
     meta->utc_sec = l1data.utc_sec;
-
 }
 
 void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp){
@@ -50,6 +52,8 @@ void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp){
     //use lidata.sc_num to select antenna patterns
     FILE *file;
     char *Rx_filename = getRxAntenna(l1data.sc_num, l1data.ddm_ant);
+    //printf("%s\n",Rx_filename);
+
     file = fopen(Rx_filename,"rb");
 
     if (file == NULL){
@@ -189,6 +193,8 @@ void init_Jacobian(struct Jacobian *jacob){
 }
 
 char* getRxAntenna(int sc_num, int ddm_ant){
+    // use static to retrun string
+    // static variable can only be used in this function but the address/memory/value will be kept globally
     static char filename[100] = ANTENNA_PATH;
     char str1[2];
     sprintf(str1, "%d", sc_num);
