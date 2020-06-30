@@ -11,12 +11,14 @@
 
 //#define ANTENNA_PATH "/scratch/andoria/a/huang712/FM_data/All_E2ES_antennas/V6/Rx"
 //#define PRN_ACF_FILE "/scratch/andoria/a/huang712/FM_data/PRN_ACF.bin"
+//#define GMF_PATH "/scratch/andoria/a/huang712/FM_data/GMF_data/"
+
 #define ANTENNA_PATH "/users/fax/CYGNSS/Data/All_E2ES_antennas/V6/Rx"
 #define PRN_ACF_FILE "/users/fax/CYGNSS/Data/PRN_ACF.bin"
-
 #define GMF_PATH "/users/fax/CYGNSS/Data/GMF_data/"
+
 #define GMF_OnOff 1 // if use modified CYGNSS GMF model
-#define fastMode_OnOff 0 // 1 for fast mode (in initialization.c)
+#define fastMode_OnOff 1 // 1 for fast mode (in initialization.c)
 
 struct option
 {

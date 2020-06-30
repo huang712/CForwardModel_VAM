@@ -400,10 +400,10 @@ void surface_composeTotalScatPowrOnSurface(int type){  //type=1
     switch (type) {
         case 1: // no speckle.  no mask
             for (int idx = 0; idx < surface.numGridPts; idx++){
-                //surface.data[idx].total = surface.data[idx].powerFactor * surface.data[idx].sigma0
-                //* surface.data[idx].mask * surface.data[idx].rainAtten_abs ;
-                //surface.data[idx].total_dP = surface.data[idx].powerFactor * surface.data[idx].sigma0_dP
-                //* surface.data[idx].mask * surface.data[idx].rainAtten_abs ;
+//                surface.data[idx].total = surface.data[idx].powerFactor * surface.data[idx].sigma0
+//                * surface.data[idx].mask * surface.data[idx].rainAtten_abs ;
+//                surface.data[idx].total_dP = surface.data[idx].powerFactor * surface.data[idx].sigma0_dP
+//                * surface.data[idx].mask * surface.data[idx].rainAtten_abs ;
                 surface.data[idx].total = surface.data[idx].powerFactor * surface.data[idx].sigma0
                                           * surface.data[idx].rainAtten_abs ;
                 surface.data[idx].total_dP = surface.data[idx].powerFactor * surface.data[idx].sigma0_dP
