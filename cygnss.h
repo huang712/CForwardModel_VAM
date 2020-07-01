@@ -14,11 +14,12 @@ struct CYGNSSL1
     int index; //index of measurement of the day
     int spNum; //1-4 reflection number
     int prn_code; //GPS PRN 1-32
+    double inc_angle; //specular point incidence angle
 
     int ddm_ant; // antenna type 2 = starboard, 3 = port
     double ant_temperature_cels;
     double gps_eirp_watt;
-    double noise_figue;
+    double noise_figure;
 
     //int ddm_peak_delay_row;
     //int ddm_peak_dopp_col;

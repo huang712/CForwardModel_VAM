@@ -1,12 +1,13 @@
-// be careful about SURF index
+// be careful about SURF index (details in EKF paper)
 // 1. wind_initialize
 // 2. wind_interpolated
 // 3. surface_calcGeomOverSurface
 // 4. gnssr.h SURFINDEX = i*numGridPtsY + j
-//
 
-// Details in EKF paper
-//
+// be careful about sxangle or sxangle_rad or ax_angle (incidence angle)
+// 1. geom.c
+// 2. surface.c
+// 3. GMF.c
 
 #ifndef CFORWARDMODEL_GNSSR_H
 #define CFORWARDMODEL_GNSSR_H

@@ -136,7 +136,9 @@ void geom_calculateSecondaryGeometry( orbitGeometryStruct *g ){
     // calculate elevation angles (hopefully these should all be the same...)
     g->rx_angle_rad = asin(RSx_unit[2]);
     g->tx_angle_rad = asin(TSx_unit[2]);
-    g->sx_angle_rad = acos(-vector_dot_product(TSx_unit,RSx_unit))/2; // elevation angle; = 90-incidence angle
+
+    // incidence angle at specular point
+    g->sx_angle_rad = acos(vector_dot_product(TSx_unit,RSx_unit))/2;
 
     // calculate Rx and Tx orbit frames transforms (as defined by Andrew)
     getSpecularFrameToOrbitFrameXfrm_new( g->rx_pos, g->rx_vel, g->SPEC_TO_RX_ORB_FRAME );	//
@@ -333,8 +335,8 @@ void geom_printToLog(FILE *outputPtr, int index, orbitGeometryStruct *g){
     fprintf(outputPtr,"   Doppler of reflected signal         %f (kHz)\n\n", g->specularDoppler_Hz / 1000);
     fprintf(outputPtr,"   Elevation Angle of Rx               %f (deg)\n", g->rx_angle_rad * R2D);
     fprintf(outputPtr,"   Elevation Angle of Tx               %f (deg)\n", g->tx_angle_rad * R2D);
-    fprintf(outputPtr,"   Specular Angle (elevation)          %f (deg)\n", g->sx_angle_rad * R2D);
-    fprintf(outputPtr,"   Specular Angle (incidence)          %f (deg)\n\n", 90 - g->sx_angle_rad * R2D);
+    fprintf(outputPtr,"   Specular Angle (incidencen)          %f (deg)\n", g->sx_angle_rad * R2D);
+    fprintf(outputPtr,"   Specular Angle (elevation)          %f (deg)\n\n", 90 - g->sx_angle_rad * R2D);
     fprintf(outputPtr,"   Angle to Sx from Rx Orb Frame (az)  %f (deg)\n",  g->angleSxFromRx_rad[0] * R2D);
     fprintf(outputPtr,"   Angle to Sx from Rx Orb Frame (el)  %f (deg)\n\n",g->angleSxFromRx_rad[1] * R2D);
     fprintf(outputPtr,"   Angle to Sx from Rx Aaron Frm (asc) %f (deg)\n",  90  - g->angleSxFromRx_rad[1] * R2D);

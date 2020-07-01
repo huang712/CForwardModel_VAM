@@ -1,7 +1,7 @@
 // Forward model for DDM assimilation
 // Read a config file as input
 // Read CYGNSS data and wind field data file to produce a simulated DDM and a Jacobian matrix
-// Version 3.01  2019/09/22 by Feixiong Huang
+
 
 #include <math.h>
 #include <time.h>
@@ -83,6 +83,7 @@ int main(int argc, char *argv[]) {
     printf("GPS PRN = %d\n", l1data.prn_code);
     printf("sp delay row = %f, sp doppler col = %f\n", l1data.ddm_sp_delay_row,l1data.ddm_sp_dopp_col);
     printf("sp lat = %f, lon = %f\n",l1data.sp_lat,l1data.sp_lon);
+    printf("sp incidence angle = %f\n",l1data.inc_angle);
     printf("ant = %d\n",l1data.ddm_ant);
 
     struct metadata meta;
@@ -106,7 +107,7 @@ int main(int argc, char *argv[]) {
     forwardModel(meta, pp, iwf, geom, &ddm_fm, &jacob,opt);
 
     printf("ddm obs = %e\n",l1data.DDM_power[6][5]);
-    printf("ddm fm = %e\n",ddm_fm.data[92].power);
+    printf("ddm fm = %e\n",ddm_fm.data[91].power);
     printf("H = %e\n",jacob.data[12247].value);
 
     //Save simulated DDM and Jacobian -------------------------------------------------------------------------------------------------

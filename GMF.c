@@ -5,8 +5,8 @@
 
 double GMF_converWindToMSS( double windSpeedMag_ms, double sp_sxangle, double sxangle){
     //Modified model from CYGNSS GMF
-    //sxangle: elevation angle at current point
-    //sp_sxangle: elevation angle at specular point
+    //sxangle: incidence angle at current point
+    //sp_sxangle: incidence angle at specular point
     //mss: mss_iso = mss_x = mss_y
 
     double u,R2,mss;
@@ -19,19 +19,19 @@ double GMF_converWindToMSS( double windSpeedMag_ms, double sp_sxangle, double sx
 
 //    printf("R2 = %f\n",R2);
 //    printf("ws = %f\n",u);
-//    printf("sp_inc = %f, inc = %f\n",90-R2D*sp_sxangle, 90-R2D*sxangle);
+//    printf("sp_inc = %f, inc = %f\n",R2D*sp_sxangle, R2D*sxangle);
 //    printf("mss = %f\n",mss);
 
     return mss;
 }
 
 
-void GMF_init(double sp_sxangle){
+void GMF_init(double sp_sxangle_rad){
     // read GMF coefficients from data
-    // sp_sxangle: elevation angle in rad
+    // sp_sxangle_rad: incidence angle in rad
 
     printf("Read CYGNSS GMF model\n");
-    double inc_angle_degree = 90-R2D*sp_sxangle; // incidence angle
+    double inc_angle_degree = R2D*sp_sxangle_rad; // incidence angle
     GMF.a0=GMF_getCoef("a0",inc_angle_degree);
     GMF.a1=GMF_getCoef("a1",inc_angle_degree);
     GMF.a2=GMF_getCoef("a2",inc_angle_degree);

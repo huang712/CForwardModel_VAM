@@ -27,7 +27,7 @@ void init_metadata(struct CYGNSSL1 l1data, struct metadata *meta) {
     meta->specular_dopplerBinIdx = meta->resample_startBin[1] + (int)round(meta->resample_resolution_bins[1] * meta->meas_ddm_sp_index[1]);
 
     meta->temp_K = l1data.ant_temperature_cels+273.15;
-    meta->noiseFigure_dB = l1data.noise_figue;
+    meta->noiseFigure_dB = l1data.noise_figure;
     meta->excess_noisefloor_dB = 0;
 
     meta->grid_resolution_m = 1000;

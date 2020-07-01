@@ -68,7 +68,8 @@ void readL1data(char L1dataFilename[], int sampleIndex, int ddm_index, struct CY
     l1data->prn_code = readnc_int_2d(ncid, "prn_code", sampleIndex, ddm_index);
     l1data->gps_eirp_watt = readnc_float_2d(ncid, "gps_eirp", sampleIndex, ddm_index);
     l1data->ddm_ant = readnc_int_2d(ncid, "ddm_ant", sampleIndex, ddm_index);
-    l1data->noise_figue = readnc_float_2d(ncid, "lna_noise_figure", sampleIndex, ddm_index);
+    l1data->noise_figure = readnc_float_2d(ncid, "lna_noise_figure", sampleIndex, ddm_index);
+    l1data->inc_angle = readnc_float_2d(ncid, "sp_inc_angle", sampleIndex, ddm_index);
 
     if (l1data->ddm_ant == 2){
         l1data->ant_temperature_cels = readnc_float_1d(ncid, "lna_temp_nadir_starboard", sampleIndex);

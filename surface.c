@@ -126,8 +126,8 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
             doppler_Hz   = dopplerTx_Hz + dopplerRx_Hz;
 
             // scattering vector and incidence angle
-            surface_getScatteringVector(TSx_unit, RSx_unit, PUT, q_vec);// get q_vec
-            sxangle_rad = acos(vector_dot_product(TSx_unit,RSx_unit))/2; //incidence angle, corrected by Feixiong
+            surface_getScatteringVector(TSx_unit, RSx_unit, PUT, q_vec); // get q_vec
+            sxangle_rad = acos(vector_dot_product(TSx_unit,RSx_unit))/2; //incidence angle
 
             int useOldAntennaAngles = 0;
 
@@ -186,8 +186,8 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
             surface.data[idx].powerFactor   = powerFactor;
 
             // to solve for rain atten. we'll need the elevation angles across surface
-            surface.data[idx].rx_elevationAngle_rad = geometry->rx_angle_rad;// asin(RSx_unit[2]); //geometry->rx_angle_rad;
-            surface.data[idx].tx_elevationAngle_rad = geometry->tx_angle_rad;// asin(TSx_unit[2]); //geometry->tx_angle_rad;
+            surface.data[idx].rx_elevationAngle_rad = geometry->rx_angle_rad;// asin(RSx_unit[2]); at SP
+            surface.data[idx].tx_elevationAngle_rad = geometry->tx_angle_rad;// asin(TSx_unit[2]); at SP
 
             // these parameters aren't used except for debugging purposes
             surface.data[idx].i             = i;
@@ -291,7 +291,7 @@ void surface_calcSigma0OnSurface(int windModelType){	//compute RCS at surface (6
 
     double ws,mss_x,mss_y,mss_b,sxangle,q_vec[3],sigma0,sigma0_dP,x,y,P,Q4,R2,dP;
     double mss_iso, sp_sxangle, dmdx;
-    sp_sxangle = surface.data[sp_index].sx_angle_rad;
+    sp_sxangle = surface.data[sp_index].sx_angle_rad; //incidence angle at specular point
 
     if (GMF_OnOff==1){
         GMF_init(sp_sxangle);
@@ -306,7 +306,7 @@ void surface_calcSigma0OnSurface(int windModelType){	//compute RCS at surface (6
         mss_x    = surface.windData[idx].mss_x;
         mss_y    = surface.windData[idx].mss_y;
         mss_b    = surface.windData[idx].mss_b;
-        sxangle  = surface.data[idx].sx_angle_rad;  //elevation angle
+        sxangle  = surface.data[idx].sx_angle_rad;  //incidence angle
         q_vec[0] = surface.data[idx].q[0];
         q_vec[1] = surface.data[idx].q[1];
         q_vec[2] = surface.data[idx].q[2];
@@ -376,17 +376,19 @@ void surface_calcSigma0OnSurface(int windModelType){	//compute RCS at surface (6
 complex double reflectionCoef(double Sxangle) {
     // Based on Valery powsp.for polarization reflection coefficient
     // (see Eqs.(A11-A13) in [1]):
+    // Sxangle: incidence angle
+
     double st,ct,tet;
     double complex eps,esq,ev1,ev2,b1,b2;
-    tet = Sxangle; //elevation angle, = 90-inc_angle
+    tet = pi/2-Sxangle; //elevation angle
     eps = 74.62 + I*51.92;
     st  = sin(tet);
     ct  = cos(tet);
-    esq = csqrt(eps-pow(st,2));
+    esq = csqrt(eps-pow(ct,2));
     ev1 = (eps*st-esq)/(eps*st+esq); //Rvv
     ev2 = (st-esq)/(st+esq);        //Rhh
     b1  = (ev1-ev2)/2; // Rrl, Rlr Right-to-left circular polarization (LHCP)
-    b2  = (ev1+ev2)/2; // Rrr, Rll Right-to-right circular polarization (RHCP)
+    //b2  = (ev1+ev2)/2; // Rrr, Rll Right-to-right circular polarization (RHCP)
     return(b1);
 }
 
