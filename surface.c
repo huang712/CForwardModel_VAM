@@ -441,11 +441,6 @@ void surface_composeTotalScatPowrOnSurface(int type){  //type=1
 
 void surface_loadSurfWindfield(windField *wf, int wfNum){	//load wind to surface frame   //wfNum=0;
     double x_m, y_m;
-
-    if( wfNum > wf->locNumPts ){ //locNumPts=1;
-        printf("Error: bad wind field loc index in surface_loadSurfWindfield"); exit(0);
-    }
-
     wf->locCurrentPt = wfNum;  //0
 
     if( wf->type == 1 )
