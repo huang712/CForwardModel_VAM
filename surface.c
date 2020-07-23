@@ -451,23 +451,12 @@ void surface_loadSurfWindfield(windField *wf, int wfNum){	//load wind to surface
     if( wf->type == 1 )
         fprintf(outputPtr,"Uniform wind case (%f m/s) ...\n\n", wf->data[wf->locCurrentPt].windSpeed_ms );
 
-    //printf("%lf \n", surface.specularLoactionX_m);  //45000
-    //printf("%lf \n", surface.specularLoactionY_m);  //45000
-
-    //surface.specularLoactionX_m = wf->loc_rowIdx[wfNum] * wf->resolutionX_m;  //250*1000
-    //surface.specularLoactionY_m = wf->loc_colIdx[wfNum] * wf->resolutionY_m;  //250000
-
-    //printf("%lf \n", surface.specularLoactionX_m);
-    //printf("%lf \n", surface.specularLoactionY_m);
-
-    for(int i=0; i<surface.numGridPts; i++){ //0:8100
-        //surface.data[i].windFieldLocation_x_m=(ix-45)*1000
+    for(int i=0; i<surface.numGridPts; i++){ //0:14400
         x_m = surface.specularLoactionX_m + surface.data[i].windFieldLocation_x_m;
         y_m = surface.specularLoactionY_m + surface.data[i].windFieldLocation_y_m;
 
         wind_getWindFieldAtXY( wf, x_m, y_m, &(surface.windData[i]) );  //important: copy wf to surface.windData[i]
-
-
+        
     }
 }
 
