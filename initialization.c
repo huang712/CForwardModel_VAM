@@ -40,6 +40,7 @@ void init_metadata(struct CYGNSSL1 l1data, struct metadata *meta) {
 
     meta->prn_code = l1data.prn_code;
     meta->utc_sec = l1data.utc_sec;
+    meta->fresnel_coeff2 = l1data.fresnel_coeff2;
 }
 
 void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp){

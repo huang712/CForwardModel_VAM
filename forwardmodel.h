@@ -17,7 +17,7 @@
 #define PRN_ACF_FILE "/users/fax/CYGNSS/Data/PRN_ACF.bin"
 #define GMF_PATH "/users/fax/CYGNSS/Data/GMF_data/"
 
-#define GMF_OnOff 0 // if use modified CYGNSS GMF model unless Katzberg model
+#define GMF_OnOff 1 // if use modified CYGNSS GMF model unless Katzberg model
 #define fastMode_OnOff 0 // 1 for fast mode (in initialization.c)
 
 struct option
@@ -63,7 +63,7 @@ struct metadata
     int utc_sec;
     int prn_code;
     double meas_ddm_sp_index[2];
-
+    double fresnel_coeff2; //square of reflectivity
 };
 
 

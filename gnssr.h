@@ -45,10 +45,11 @@ FILE *outputPtr, *errPtr, *consolePtr;
 int bi_index0[14400][4];  // for 1km in SURF
 double bi_weight0[14400][4]; // for 1km in SURF
 int sp_index; //index of specular point on the 120 X 120 grid (global variable)
+double cyg_R2; // CYGNSS square of reflectivity at SP (very slight change on incidence angle)
 
 //******************************************************************************/
 //GMF.c
-double GMF_converWindToMSS( double windSpeedMag_ms, double sp_sxangle, double sxangle);
+double GMF_converWindToMSS( double windSpeedMag_ms, double R2);
 void GMF_init(double sp_sxangle);
 double GMF_getCoef(char [], double inc_angle_degree);
 double get_gfds(double u);
@@ -177,14 +178,11 @@ typedef struct{
 
 } windField;
 
-void ddmaLUT_initialize(void);
 void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField iwf, double grid_resolution);
 void wind_initialize(windField *wf, struct metadata meta, struct Geometry geom, struct inputWindField iwf);
 void wind_converWindToMSS( double windSpeedMag_ms, double windDirectionAngle_deg, double mss[5] );
 void wind_convertWindXY2MagDir( double x, double y, double *mag, double *dir_rad );
 void wind_getWindFieldAtXY( windField *wf, double x_m, double y_m, windFieldPixel *value );
-
-//double ddmaLUT[63000];
 
 //******************************************************************************/
 // Surface

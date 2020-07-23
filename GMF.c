@@ -3,16 +3,13 @@
 
 #include "gnssr.h"
 
-double GMF_converWindToMSS( double windSpeedMag_ms, double sp_sxangle, double sxangle){
+double GMF_converWindToMSS( double windSpeedMag_ms, double R2){
     //Modified model from CYGNSS GMF
-    //sxangle: incidence angle at current point
-    //sp_sxangle: incidence angle at specular point
     //mss: mss_iso = mss_x = mss_y
 
-    double u,R2,mss;
+    double u,mss;
     double g;
 
-    R2 = pow(cabs(reflectionCoef(sxangle)),2);
     u = windSpeedMag_ms;
     g = get_g(u);  // CYGNSS sigma0
     mss=R2/(2*g); // compute MSS

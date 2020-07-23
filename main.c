@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
     printf("GPS PRN = %d\n", l1data.prn_code);
     printf("sp delay row = %f, sp doppler col = %f\n", l1data.ddm_sp_delay_row,l1data.ddm_sp_dopp_col);
     printf("sp lat = %f, lon = %f\n",l1data.sp_lat,l1data.sp_lon);
-    printf("sp incidence angle = %f\n",l1data.inc_angle);
+    printf("sp incidence angle = %.2f\n",l1data.inc_angle);
     printf("ant = %d\n",l1data.ddm_ant);
 
     struct metadata meta;
@@ -126,6 +126,6 @@ int main(int argc, char *argv[]) {
     printf("END\n");
     printf("\n");
     end =clock();
-    printf("Forward model running time: %f seconds\n", (end-start)/CLOCKS_PER_SEC);
+    printf("Forward model running time: %.2f seconds\n", (end-start)/CLOCKS_PER_SEC);
     return 0;
 }

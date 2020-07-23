@@ -38,6 +38,7 @@ void surface_initialize(struct metadata meta){
     surface.windData = (windFieldPixel *) calloc( surface.numGridPts, sizeof(windFieldPixel) );
     surface_resetToZero();  //initialize surface.Data
 
+    cyg_R2 = meta.fresnel_coeff2;
 }
 
 void surface_cleanup(void){
@@ -297,7 +298,7 @@ void surface_calcSigma0OnSurface(int windModelType){	//compute RCS at surface (6
         GMF_init(sp_sxangle);
     }
 
-    printf("WS at SP = %f m/s\n",surface.windData[sp_index].windSpeed_ms);
+    printf("WS at SP = %.2f m/s\n",surface.windData[sp_index].windSpeed_ms);
 
     for (int idx = 0; idx < surface.numGridPts; idx++) {
 
@@ -318,11 +319,15 @@ void surface_calcSigma0OnSurface(int windModelType){	//compute RCS at surface (6
 //        printf("mss = %f\n",mss_iso);
 
         // evaluate sigma0 (Eqn 34 [ZV 2000])
-        R2     = pow(cabs(reflectionCoef(sxangle)),2);   //reflection coefficient
-        Q4     = pow(vector_norm(q_vec),4) / pow(q_vec[2],4);
+
+        //the change of R2 is slight in the glistenning zone
+        R2 = cyg_R2; // use the one from CYGNSS
+        //R2 = pow(cabs(reflectionCoef(sxangle)),2);   //reflection coefficient;
+
+        Q4 = pow(vector_norm(q_vec),4) / pow(q_vec[2],4);
 
         if (GMF_OnOff == 1){
-            mss_iso = GMF_converWindToMSS(ws, sp_sxangle, sxangle); //modified CYGNSS model
+            mss_iso = GMF_converWindToMSS(ws, R2); //modified CYGNSS model
             dmdx = get_dmdx_GMF(R2,ws);
         }
         else {

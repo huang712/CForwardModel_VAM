@@ -19,4 +19,4 @@ forwardmodel.c : include main function of forward model with the help of gnssr.h
 
 gnssr.h : define all global values, structures and functions for use of forward model (from E2ES)
 
-wind.c surface.c specular.c math.c grid.c geom.c ddm.c cood.c antenna.c debug.c : functions defined by gnssr.h
+wind.c surface.c specular.c math.c grid.c geom.c ddm.c cood.c antenna.c debug.c GMF.c: functions defined by gnssr.h
