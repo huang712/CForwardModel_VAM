@@ -16,6 +16,7 @@ struct CYGNSSL1
     int prn_code; //GPS PRN 1-32
     double inc_angle; //specular point incidence angle
     double fresnel_coeff2; // square of reflectivity
+    double sp_rx_gain;
 
     int ddm_ant; // antenna type 2 = starboard, 3 = port
     double ant_temperature_cels;

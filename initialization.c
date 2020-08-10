@@ -47,7 +47,7 @@ void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp){
     pp->Rx_antennaGain_dB = 0;
     pp->Tx_antennaGain_dB = 0;
     pp->AntennaType = 0;  //0 for antenna file, 1 for isotropic
-    pp->Tx_Power_dB = 10 * log10(l1data.gps_eirp_watt);
+    pp->Tx_eirp_watt = l1data.gps_eirp_watt;
     pp->AtmosphericLoss_dB = 0.0;
 
     //use lidata.sc_num to select antenna patterns

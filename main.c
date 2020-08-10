@@ -85,6 +85,7 @@ int main(int argc, char *argv[]) {
     printf("sp lat = %f, lon = %f\n",l1data.sp_lat,l1data.sp_lon);
     printf("sp incidence angle = %.2f\n",l1data.inc_angle);
     printf("ant = %d\n",l1data.ddm_ant);
+    printf("sp rx gain = %f dBi\n",l1data.sp_rx_gain);
 
     struct metadata meta;
     struct powerParm pp;

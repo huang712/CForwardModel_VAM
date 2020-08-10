@@ -35,12 +35,14 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
     PUTz = (double *)calloc(numPts,sizeof(double));
 
 
-    //First rorate along Y for phi, then along X for theta
-    //important! order of index, reference in the EKF paper
+    //First rorate along X for theta, then along Y for phi
+    //important! order of index, reference in the thesis
     for (int i = 0; i < numX; i++){
         for(int j = 0;j < numY;j++){
-            phi = (numY/2-i) * dphi;
-            theta= (numX/2-j) * dtheta;
+            theta= (numX/2-i) * dtheta; // along X
+            phi= (numY/2-j) * dphi; // along Y
+            //phi = (numY/2-i) * dphi; // along X
+            //theta= (numX/2-j) * dtheta; // along Y
             ind = SURFINDEX(i, j);
             PUTx[ind] = r_sp * sin(phi);
             PUTy[ind] = -r_sp * cos(phi) * sin(theta);

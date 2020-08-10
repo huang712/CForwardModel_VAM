@@ -59,7 +59,7 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
     double *tx_vel = geometry->tx_vel;
     double *sx_pos = geometry->sx_pos;  //specular position at specular frame
 
-    double TXP_DB = pp.Tx_Power_dB;
+    double TXP_DB = 10 * log10(pp.Tx_eirp_watt);
     double ATTEN_DB = pp.AtmosphericLoss_dB;
 
     surface.specularGridPt_x_idx = (int)floor(surface.numGridPtsX / 2.0 );	//N_theta/2  (48)
@@ -144,7 +144,10 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
                 if( angleSxFromRx_rad[0] > pi )
                     angleSxFromRx_rad[0] -= 360*D2R;
             }else{
-                // get relative angle to grid point as seen from Rx or Tx
+                // get relative angle to grid point as seen from Rx or Tx for antenna gain calculations
+                // Now we assume there is no attitude dynamics (body frame = orbit frame)
+                // angleSxFromRx_rad[0] = theta (azimuth)
+                // angleSxFromRx_rad[0] = phi (elevation)
                 geom_getRelativeAngleInFrame(geometry->rx_pos, PUT, geometry->SPEC_TO_RX_ORB_FRAME, angleSxFromRx_rad );
                 geom_getRelativeAngleInFrame(geometry->tx_pos, PUT, geometry->SPEC_TO_TX_ORB_FRAME, angleSxFromTx_rad );
             }
@@ -152,7 +155,8 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
 
             // get Rx & Tx antenna gains for specific angles
             RxG = antenna_getGain_abs(CYGNSS_NADIR_ANT,   LHCP, angleSxFromRx_rad );
-            TxG = antenna_getGain_abs(GPS_SAT_ANT,        RHCP, angleSxFromTx_rad );
+            TxG = 1; // Transmitter antenna pattern gain
+            //TxG = antenna_getGain_abs(GPS_SAT_ANT,        RHCP, angleSxFromTx_rad );
 
             // get relative angle to grid point as seen from Rx or Tx (angles for rain ...)
             // TODO: don't reuse variables
@@ -456,7 +460,7 @@ void surface_loadSurfWindfield(windField *wf, int wfNum){	//load wind to surface
         y_m = surface.specularLoactionY_m + surface.data[i].windFieldLocation_y_m;
 
         wind_getWindFieldAtXY( wf, x_m, y_m, &(surface.windData[i]) );  //important: copy wf to surface.windData[i]
-        
+
     }
 }
 

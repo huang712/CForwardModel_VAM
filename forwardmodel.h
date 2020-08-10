@@ -18,7 +18,7 @@
 #define GMF_PATH "/users/fax/CYGNSS/Data/GMF_data/"
 
 #define GMF_OnOff 1 // if use modified CYGNSS GMF model unless Katzberg model
-#define fastMode_OnOff 0 // 1 for fast mode (in initialization.c)
+#define fastMode_OnOff 1 // 1 for fast mode (in initialization.c)
 
 struct option
 {
@@ -72,7 +72,8 @@ struct powerParm
     double Rx_antennaGain_dB; //excess receiver antenna gain
     double Tx_antennaGain_dB;
     unsigned int AntennaType;
-    double Tx_Power_dB;
+    //double Tx_Power_dB;
+    double Tx_eirp_watt;
     double AtmosphericLoss_dB;
     int Rx_numEl;
     int Rx_numAz;

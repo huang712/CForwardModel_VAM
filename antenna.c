@@ -24,8 +24,8 @@ void antenna_initialize(struct powerParm pp){
     TXG_DB = pp.Tx_antennaGain_dB;
     antennaInputType = pp.AntennaType;
 
-    double TXP_DB   = pp.Tx_Power_dB;
-    double ATTEN_DB = pp.AtmosphericLoss_dB;
+    //double TXP_DB   = pp.Tx_Power_dB;
+    //double ATTEN_DB = pp.AtmosphericLoss_dB;
 
     //int plotAntennaData   = 0;
     int numEl = pp.Rx_numEl;
@@ -74,7 +74,7 @@ double antenna_getGain_abs(  antennaType antType, polarizationType pol, double a
                 case RHCP: return -INFINITY;
                 case LHCP: return -INFINITY;
             }
-        case GPS_SAT_ANT:
+        case GPS_SAT_ANT: // not working
             switch (pol) {
                 case RHCP: return pow(10,(TXG_DB/10));  // get_GPS_satAnt_gainPattern_dB( elevation_rad );
                 case LHCP: return -INFINITY;
