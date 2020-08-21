@@ -73,12 +73,13 @@ int main(int argc, char *argv[]) {
     struct CYGNSSL1 l1data;
     readL1data(L1dataFilename, sampleIndex, ddmIndex, &l1data);  //read L1 data into the structure l1data
 
-    //quality flag should be checked before running the forward model
-    if(l1data.quality_flags != 0){
-        printf("Quality flags = %d\n",l1data.quality_flags);
-        return 0; //skip data of quality issue
-    }
+    //quality flag should be checked before running the forward model - remove it now
+//    if(l1data.quality_flags != 0){
+//        printf("Quality flags = %d\n",l1data.quality_flags);
+//        return 0; //skip data of quality issue
+//    }
 
+    printf("Quality flags = %d\n",l1data.quality_flags);
     printf("ddmIndex = %d, sampleIndex = %d, quality_flags = %d\n", ddmIndex, sampleIndex, l1data.quality_flags);
     printf("GPS PRN = %d\n", l1data.prn_code);
     printf("sp delay row = %f, sp doppler col = %f\n", l1data.ddm_sp_delay_row,l1data.ddm_sp_dopp_col);
