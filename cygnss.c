@@ -57,8 +57,8 @@ void readL1data(char L1dataFilename[], int sampleIndex, int ddm_index, struct CY
     l1data->sc_att_rad[1] = readnc_float_1d(ncid, "sc_roll", sampleIndex);
     l1data->sc_att_rad[2] = readnc_float_1d(ncid, "sc_yaw", sampleIndex);
 
-    l1data->utc_sec = readnc_int_1d(ncid, "ddm_timestamp_utc", sampleIndex);
-    l1data->quality_flags = readnc_int_2d(ncid, "quality_flags", sampleIndex, ddm_index);
+    l1data->utc_sec = readnc_float_1d(ncid, "ddm_timestamp_utc", sampleIndex);
+    l1data->quality_flags = readnc_long_2d(ncid, "quality_flags", sampleIndex, ddm_index);
     //l1data->ddm_peak_delay_row = readnc_int_2d(ncid, "brcs_ddm_peak_bin_delay_row", sampleIndex, ddm_index);
     //l1data->ddm_peak_dopp_col = readnc_int_2d(ncid, "brcs_ddm_peak_bin_dopp_col", sampleIndex, ddm_index);
     l1data->ddm_sp_delay_row = readnc_float_2d(ncid, "brcs_ddm_sp_bin_delay_row", sampleIndex, ddm_index);
@@ -103,6 +103,17 @@ int readnc_int_2d(int ncid, char varName[], int index, int ddm_index){
     size_t count[2]={1,1};
     if ((retval = nc_inq_varid(ncid, varName, &var_id))) ERR(retval);
     if ((retval = nc_get_vara_int(ncid, var_id, start, count, &var))) ERR(retval);
+    return var;
+}
+
+long int readnc_long_2d(int ncid, char varName[], int index, int ddm_index){
+    int retval;
+    int var_id;
+    long int var;
+    size_t start[2]={index,ddm_index};
+    size_t count[2]={1,1};
+    if ((retval = nc_inq_varid(ncid, varName, &var_id))) ERR(retval);
+    if ((retval = nc_get_vara_long(ncid, var_id, start, count, &var))) ERR(retval);
     return var;
 }
 

@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
 //        return 0; //skip data of quality issue
 //    }
 
-    printf("Quality flags = %d\n",l1data.quality_flags);
+    printf("Quality flags = %ld\n",l1data.quality_flags);
     printf("ddmIndex = %d, sampleIndex = %d, quality_flags = %d\n", ddmIndex, sampleIndex, l1data.quality_flags);
     printf("GPS PRN = %d\n", l1data.prn_code);
     printf("sp delay row = %f, sp doppler col = %f\n", l1data.ddm_sp_delay_row,l1data.ddm_sp_dopp_col);

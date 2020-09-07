@@ -1,5 +1,6 @@
 # 2020-09-06
 - add transformations for attitude dynamics
+- use long int for quality_flags, double for utc_sec
 
 # 2020-08-20
 - remove checks on quality_flags in main.c

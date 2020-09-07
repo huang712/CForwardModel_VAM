@@ -8,8 +8,8 @@
 
 struct CYGNSSL1
 {
-    int quality_flags;
-    int utc_sec;
+    long int quality_flags;
+    double utc_sec;
     int sc_num;  //1-8
     int index; //index of measurement of the day
     int spNum; //1-4 reflection number
@@ -43,7 +43,8 @@ struct CYGNSSL1
 void readL1data(char L1dataFilename[], int sampleIndex, int ddm_index, struct CYGNSSL1 *l1data);
 
 int readnc_int_1d(int ncid, char varName[], int index);
-int readnc_int_2d(int ncid, char varName[], int index, int spNum);
+int readnc_int_2d(int ncid, char varName[], int index, int ddm_index);
+long int readnc_long_2d(int ncid, char varName[], int index, int ddm_index);
 float readnc_float_1d(int ncid, char varName[], int index);
 float readnc_float_2d(int ncid, char varName[], int index, int ddm_index);
 
