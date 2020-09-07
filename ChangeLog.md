@@ -1,3 +1,6 @@
+# 2020-09-06
+- add transformations for attitude dynamics
+
 # 2020-08-20
 - remove checks on quality_flags in main.c
 

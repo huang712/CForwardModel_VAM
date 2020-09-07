@@ -11,6 +11,24 @@ double cot(double z){ return 1.0 / tan(z); }
 double sec(double z){ return 1.0 / cos(z); }
 double csc(double z){ return 1.0 / sin(z); }
 
+void RotationMatrix_X (double theta, double xfrmMatrix[9]){
+    xfrmMatrix[0]=1; xfrmMatrix[1]=0; xfrmMatrix[2]=0;
+    xfrmMatrix[3]=0; xfrmMatrix[4]=cos(theta); xfrmMatrix[5]=sin(theta);
+    xfrmMatrix[6]=0; xfrmMatrix[7]=-sin(theta); xfrmMatrix[8]=cos(theta);
+}
+
+void RotationMatrix_Y (double theta, double xfrmMatrix[9]){
+    xfrmMatrix[0]=cos(theta); xfrmMatrix[1]=0; xfrmMatrix[2]=-sin(theta);
+    xfrmMatrix[3]=0; xfrmMatrix[4]=1; xfrmMatrix[5]=0;
+    xfrmMatrix[6]=sin(theta); xfrmMatrix[7]=0; xfrmMatrix[8]=cos(theta);
+}
+
+void RotationMatrix_Z (double theta, double xfrmMatrix[9]){
+    xfrmMatrix[0]=cos(theta); xfrmMatrix[1]=sin(theta); xfrmMatrix[2]=0;
+    xfrmMatrix[3]=-sin(theta); xfrmMatrix[4]=cos(theta); xfrmMatrix[5]=0;
+    xfrmMatrix[6]=0; xfrmMatrix[7]=0; xfrmMatrix[8]=1;
+}
+
 //-----------------------------------------------------------------------------------
 void bubble(int *a,int n) //array a and length n
 {

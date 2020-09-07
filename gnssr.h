@@ -83,6 +83,9 @@ typedef struct {
     double rx_pos_llh[3], tx_pos_llh[3], sx_pos_llh[3];
     double rx_vel_llh[3], tx_vel_llh[3], sx_vel_llh[3];
 
+    // attitude dynamic
+    double sc_att_rad[3];
+
     // Rx\Tx to Sx parameters
     double rx_range_m, tx_range_m;
     double rx_speed_ms, tx_speed_ms, sx_speed_ms;
@@ -94,9 +97,9 @@ typedef struct {
     // transforms between frames
     double ECEF_TO_SPEC_FRAME[9], SPEC_TO_ECEF_FRAME[9];
     double SPEC_TO_RX_ORB_FRAME[9], SPEC_TO_TX_ORB_FRAME[9];
-    double SPEC_TO_RX_ORB_FRAME_AARON[9], SPEC_TO_TX_ORB_FRAME_AARON[9];
-
+    double SPEC_TO_RX_ORB_FRAME_AARON[9], SPEC_TO_TX_ORB_FRAME_AARON[9]; //not used
     double ECEF_TO_RX_ORB_FRAME[9], ECEF_TO_TX_ORB_FRAME[9];
+    double ORB_TO_RX_BODY_FRAME[9], SPEC_TO_RX_BODY_FRAME[9];
 
     // various angles between things
     double angleSxFromRx_rad[2], angleSxFromTx_rad[2];
@@ -140,7 +143,7 @@ void getECEF2SpecularFrameXfrm( double rx_pos_ecef[3], double tx_pos_ecef[3], do
 void getSpecularFrameToOrbitFrameXfrm( double sat_pos[3], double sat_vel[3], double xfrmMatrix[9] );
 void getSpecularFrameToAaronOrbitFrameXfrm( double sat_pos[3], double sat_vel[3], double xfrmMatrix[9] );
 void getECEF2OrbitFrameXfrm( double sat_pos_ecef[3], double sat_vel_ecef[3], double xfrmMatrix[9] ); // by Feixiong
-
+void getOrbit2BodyFrameXfrm (double pitch, double roll, double yaw, double xfrmMatrix[9]); // by Feixiong
 //******************************************************************************/
 // specular.c
 
@@ -414,6 +417,10 @@ void cubic_interpolation_3vector( double f0[3], double f1[3], double df0[3], dou
 double cot(double z);
 double sec(double z);
 double csc(double z);
+
+void RotationMatrix_X (double theta, double xfrmMatrix[9]);
+void RotationMatrix_Y (double theta, double xfrmMatrix[9]);
+void RotationMatrix_Z (double theta, double xfrmMatrix[9]);
 
 void vector_cross_product(double a[3], double b[3],double c[3]);
 void vector_unit(double *v, double *u);

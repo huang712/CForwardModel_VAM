@@ -130,6 +130,7 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
             surface_getScatteringVector(TSx_unit, RSx_unit, PUT, q_vec); // get q_vec
             sxangle_rad = acos(vector_dot_product(TSx_unit,RSx_unit))/2; //incidence angle
 
+
             int useOldAntennaAngles = 0;
 
             if( useOldAntennaAngles ){
@@ -145,10 +146,10 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
                     angleSxFromRx_rad[0] -= 360*D2R;
             }else{
                 // get relative angle to grid point as seen from Rx or Tx for antenna gain calculations
-                // Now we assume there is no attitude dynamics (body frame = orbit frame)
-                // angleSxFromRx_rad[0] = theta (azimuth)
-                // angleSxFromRx_rad[0] = phi (elevation)
-                geom_getRelativeAngleInFrame(geometry->rx_pos, PUT, geometry->SPEC_TO_RX_ORB_FRAME, angleSxFromRx_rad );
+                // angleSxFromRx_rad[0],[1] = [theta (azimuth) phi (elevation)]
+                // For RX in Body frame
+                // For TX in Orbit frame
+                geom_getRelativeAngleInFrame(geometry->rx_pos, PUT, geometry->SPEC_TO_RX_BODY_FRAME, angleSxFromRx_rad );
                 geom_getRelativeAngleInFrame(geometry->tx_pos, PUT, geometry->SPEC_TO_TX_ORB_FRAME, angleSxFromTx_rad );
             }
 
@@ -159,9 +160,9 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
             //TxG = antenna_getGain_abs(GPS_SAT_ANT,        RHCP, angleSxFromTx_rad );
 
             // get relative angle to grid point as seen from Rx or Tx (angles for rain ...)
-            // TODO: don't reuse variables
-            geom_getRelativeAngleInFrame(geometry->rx_pos, PUT, geometry->SPEC_TO_RX_ORB_FRAME, angleSxFromRx_rad );
-            geom_getRelativeAngleInFrame(geometry->tx_pos, PUT, geometry->SPEC_TO_TX_ORB_FRAME, angleSxFromTx_rad );
+            // rain impact not supported now
+            //geom_getRelativeAngleInFrame(geometry->rx_pos, PUT, geometry->SPEC_TO_RX_BODY_FRAME, angleSxFromRx_rad );
+            //geom_getRelativeAngleInFrame(geometry->tx_pos, PUT, geometry->SPEC_TO_TX_ORB_FRAME, angleSxFromTx_rad );
 
             // calculate the geometry-dependent, windfield-independent power factor for
             // the scattering equation.

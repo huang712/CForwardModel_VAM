@@ -49,6 +49,10 @@ void geom_initialize(geometryData *gd, struct Geometry geom){	//read geometry in
         gd->g[i].sx_pos_ecef[1] = geom.sp_position_ecef_m[1];
         gd->g[i].sx_pos_ecef[2] = geom.sp_position_ecef_m[2];
 
+        gd->g[i].sc_att_rad[0] = geom.sc_att_rad[0];
+        gd->g[i].sc_att_rad[1] = geom.sc_att_rad[1];
+        gd->g[i].sc_att_rad[2] = geom.sc_att_rad[2];
+
         //geom_propagateGeometry( &(gd->g[i]), time_s, dist_km );
         geom_calculateSecondaryGeometry(&(gd->g[i]));	//solve specular point; convert ECEF to specular frame; compute sx_pos, RX, TX, Dopper, Delay
     }
@@ -144,6 +148,13 @@ void geom_calculateSecondaryGeometry( orbitGeometryStruct *g ){
     // SPEC to Orbit
     matrix_multiply(3,3,3,g->ECEF_TO_RX_ORB_FRAME,g->SPEC_TO_ECEF_FRAME,g->SPEC_TO_RX_ORB_FRAME);
     matrix_multiply(3,3,3,g->ECEF_TO_TX_ORB_FRAME,g->SPEC_TO_ECEF_FRAME,g->SPEC_TO_TX_ORB_FRAME);
+
+    // Orbit to Body (only for RX)
+    // Fot Tx, Body = Orbit
+    getOrbit2BodyFrameXfrm (g->sc_att_rad[0],g->sc_att_rad[1],g->sc_att_rad[2],g->ORB_TO_RX_BODY_FRAME ); //by Feixiong
+
+    // SPEC to Body (only for RX)
+    matrix_multiply(3,3,3,g->ORB_TO_RX_BODY_FRAME,g->SPEC_TO_RX_ORB_FRAME,g->SPEC_TO_RX_BODY_FRAME);
 
     // calculate the Rx orbit frame transforms ( as used by Aaron )
     //getSpecularFrameToAaronOrbitFrameXfrm( g->rx_pos, g->rx_vel, g->SPEC_TO_RX_ORB_FRAME_AARON );
@@ -283,6 +294,22 @@ void getECEF2OrbitFrameXfrm( double sat_pos_ecef[3], double sat_vel_ecef[3],
     vector_cross_product(tempy, tempz, tempx);
 
     matrix_form3x3(tempx, tempy, tempz, xfrmMatrix);
+}
+
+void getOrbit2BodyFrameXfrm (double pitch, double roll, double yaw,double xfrmMatrix[9] ){
+    // add by Feixiong
+    // from Orbit frame to Body frame using attitude dynamics
+    double theta = pitch; //pitch-Y
+    double phi = roll;  //roll-X
+    double psi = yaw;  //yaw-Z
+
+    double R_X[9],R_Y[9],R_Z[9],R_ZX[9];
+    RotationMatrix_X (phi, R_X);
+    RotationMatrix_Y (theta, R_Y);
+    RotationMatrix_Z (psi, R_Z);
+    matrix_multiply(3,3,3,R_Z,R_X,R_ZX); //2-1-3 sequence
+    matrix_multiply(3,3,3,R_ZX,R_Y,xfrmMatrix);
+
 }
 
 void getSpecularFrameToAaronOrbitFrameXfrm( double sat_pos[3], double sat_vel[3],
