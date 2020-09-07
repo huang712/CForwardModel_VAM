@@ -109,6 +109,7 @@ struct Geometry
     double tx_velocity_ecef_ms[3];
     double sp_position_ecef_m[3];
     double sc_att_rad[3];
+    double sp_lat, sp_lon;
 };
 
 //output data

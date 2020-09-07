@@ -149,7 +149,8 @@ void init_Geometry(struct CYGNSSL1 l1data, struct Geometry *geom){
     memcpy(geom->tx_velocity_ecef_ms, l1data.tx_velocity_ecef_ms, 3*sizeof(double));
     memcpy(geom->sp_position_ecef_m, l1data.sp_position_ecef_m, 3*sizeof(double));
     memcpy(geom->sc_att_rad, l1data.sc_att_rad, 3*sizeof(double));
-
+    geom->sp_lat = l1data.sp_lat;
+    geom->sp_lon = l1data.sp_lon;
 }
 
 void init_DDM(struct CYGNSSL1 l1data, struct DDMfm *ddm_fm){

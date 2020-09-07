@@ -19,6 +19,12 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
     double dphi, dtheta, phi, theta;  //all in unit of rad
     int numX, numY, numPts, ind;
 
+    // check if specular point is inside th wind map
+    if (geom.sp_lat<iwf.lat_min_deg || geom.sp_lat>iwf.lat_max_deg || geom.sp_lon<iwf.lon_min_deg || geom.sp_lon>iwf.lon_max_deg){
+        printf("Error: the specular point is outside the wind map\n");
+        exit(0);
+    }
+
     //printf ("geom sp = %f %f %f\n",geom.sp_position_ecef_m[0],geom.sp_position_ecef_m[1],geom.sp_position_ecef_m[2]);
     r_sp = vector_norm(geom.sp_position_ecef_m);
     d = grid_resolution;
