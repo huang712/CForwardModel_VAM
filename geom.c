@@ -174,7 +174,7 @@ void geom_calculateSecondaryGeometry( orbitGeometryStruct *g ){
     geom_getRelativeAngleInFrame(g->tx_pos, g->rx_pos, g->SPEC_TO_TX_ORB_FRAME, g->angleRxFromTx_rad );
 
     // get relative angle to specular point as seen from Rx or Tx
-    geom_getRelativeAngleInFrame(g->rx_pos, g->sx_pos, g->SPEC_TO_RX_ORB_FRAME, g->angleSxFromRx_rad );
+    geom_getRelativeAngleInFrame(g->rx_pos, g->sx_pos, g->SPEC_TO_RX_BODY_FRAME, g->angleSxFromRx_rad ); //Body frame
     geom_getRelativeAngleInFrame(g->tx_pos, g->sx_pos, g->SPEC_TO_TX_ORB_FRAME, g->angleSxFromTx_rad );
     //geom_getRelativeAngleInFrame(g->rx_pos, g->sx_pos, g->SPEC_TO_RX_ORB_FRAME_AARON, g->angleSxFromRxAaron_rad );
     //geom_getRelativeAngleInFrame(g->tx_pos, g->sx_pos, g->SPEC_TO_TX_ORB_FRAME_AARON, g->angleSxFromTxAaron_rad );
