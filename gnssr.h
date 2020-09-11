@@ -1,4 +1,4 @@
-// be careful about SURF index (details in EKF paper)
+// be careful about SURF index (details in my Thesis)
 // 1. wind_initialize
 // 2. wind_interpolated
 // 3. surface_calcGeomOverSurface
@@ -103,7 +103,6 @@ typedef struct {
 
     // various angles between things
     double angleSxFromRx_rad[2], angleSxFromTx_rad[2];
-    double angleSxFromRxAaron_rad[2], angleSxFromTxAaron_rad[2];
     double angleTxFromRx_rad[2], angleRxFromTx_rad[2];
     double distance_rx2tx_m;
     double doppler_rx2tx_Hz;
@@ -140,8 +139,6 @@ void geom_getRelativeAngleInFrame( double origin[3], double pos[3] , double M[9]
 orbitGeometryStruct *geom_getOrbitData(geometryData *gd, int geomIdx );
 
 void getECEF2SpecularFrameXfrm( double rx_pos_ecef[3], double tx_pos_ecef[3], double sx_pos_ecef[3], double xfrmMatrix[9]);
-void getSpecularFrameToOrbitFrameXfrm( double sat_pos[3], double sat_vel[3], double xfrmMatrix[9] );
-void getSpecularFrameToAaronOrbitFrameXfrm( double sat_pos[3], double sat_vel[3], double xfrmMatrix[9] );
 void getECEF2OrbitFrameXfrm( double sat_pos_ecef[3], double sat_vel_ecef[3], double xfrmMatrix[9] ); // by Feixiong
 void getOrbit2BodyFrameXfrm (double pitch, double roll, double yaw, double xfrmMatrix[9]); // by Feixiong
 //******************************************************************************/

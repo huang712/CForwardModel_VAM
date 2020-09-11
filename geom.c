@@ -156,10 +156,6 @@ void geom_calculateSecondaryGeometry( orbitGeometryStruct *g ){
     // SPEC to Body (only for RX)
     matrix_multiply(3,3,3,g->ORB_TO_RX_BODY_FRAME,g->SPEC_TO_RX_ORB_FRAME,g->SPEC_TO_RX_BODY_FRAME);
 
-    // calculate the Rx orbit frame transforms ( as used by Aaron )
-    //getSpecularFrameToAaronOrbitFrameXfrm( g->rx_pos, g->rx_vel, g->SPEC_TO_RX_ORB_FRAME_AARON );
-    //getSpecularFrameToAaronOrbitFrameXfrm( g->tx_pos, g->tx_vel, g->SPEC_TO_TX_ORB_FRAME_AARON );
-
     // get distance, Doppler, and relative angles between Rx and Tx
     double vector_tx_to_rx[9],vector_rx_to_tx[9],RTx_unit[3],TRx_unit[3];
     vector_subtract(g->rx_pos, g->tx_pos, vector_tx_to_rx); // vector from Tx to Rx
@@ -176,15 +172,6 @@ void geom_calculateSecondaryGeometry( orbitGeometryStruct *g ){
     // get relative angle to specular point as seen from Rx or Tx
     geom_getRelativeAngleInFrame(g->rx_pos, g->sx_pos, g->SPEC_TO_RX_BODY_FRAME, g->angleSxFromRx_rad ); //Body frame
     geom_getRelativeAngleInFrame(g->tx_pos, g->sx_pos, g->SPEC_TO_TX_ORB_FRAME, g->angleSxFromTx_rad );
-    //geom_getRelativeAngleInFrame(g->rx_pos, g->sx_pos, g->SPEC_TO_RX_ORB_FRAME_AARON, g->angleSxFromRxAaron_rad );
-    //geom_getRelativeAngleInFrame(g->tx_pos, g->sx_pos, g->SPEC_TO_TX_ORB_FRAME_AARON, g->angleSxFromTxAaron_rad );
-
-    // apply correction to Aaron's angles
-    //g->angleSxFromRxAaron_rad[0] -= 180 * D2R;
-    //if( g->angleSxFromRxAaron_rad[0] < -1*pi )
-    //    g->angleSxFromRxAaron_rad[0] += 360*D2R;
-    //if( g->angleSxFromRxAaron_rad[0] > pi )
-    //    g->angleSxFromRxAaron_rad[0] -= 360*D2R;
 
     // Rx & Tx antenna gains for both polarizations (not all are used currently)
     // specular point gain
@@ -253,25 +240,6 @@ void getECEF2SpecularFrameXfrm( double rx_pos_ecef[3], double tx_pos_ecef[3],
     matrix_form3x3(tempx, tempy, tempz, xfrmMatrix); //form a matrix by combining three row vectors
 }
 
-void getSpecularFrameToOrbitFrameXfrm( double sat_pos[3], double sat_vel[3],
-                                       double xfrmMatrix[9] ){
-    // Old version: does not account for earth rotation
-    // Matrix for column vector [x1;y1;z1]=M*[10;y0;z0];
-    // this transform defines the orbit frame of a satellite (Rx or Tx)
-    // this is defined by Andrew and differs from Aarons orbit frame definition
-    // x-hat is velocity vector
-    // z-hat points toward Earth (center of Earth assumed 0,0,0), orthog to x-hat
-    // y-hat follows from right hand system
-    // sat_pos and sat_vec expressed in specular frame
-
-    double tempx[3],tempy[3],tempz[3];
-    vector_unit(sat_vel, tempx);
-    vector_scale(sat_pos, tempz, -1);
-    vector_orthoNorm(tempx, tempz);
-    vector_cross_product(tempz, tempx, tempy);
-    matrix_form3x3(tempx, tempy, tempz, xfrmMatrix);
-}
-
 void getECEF2OrbitFrameXfrm( double sat_pos_ecef[3], double sat_vel_ecef[3],
                                            double xfrmMatrix[9] ){
     // Matrix for column vector [x1;y1;z1]=M*[x0;y0;z0];
@@ -311,24 +279,6 @@ void getOrbit2BodyFrameXfrm (double pitch, double roll, double yaw,double xfrmMa
     matrix_multiply(3,3,3,R_ZX,R_Y,xfrmMatrix);
 
 }
-
-void getSpecularFrameToAaronOrbitFrameXfrm( double sat_pos[3], double sat_vel[3],
-                                            double xfrmMatrix[9] ){
-    // Not used
-    // this is Aarons orbit frame.  Its different than how I'm used to
-    // thinking, so I separated this from the orbit frame as defined above.
-    // z-hat points along satellite velocity
-    // x-hat points up from Earth, orthog to z-hat
-    // y-hat follows from right hand system
-
-    double tempx[3],tempy[3],tempz[3];
-    vector_unit(sat_vel, tempz);
-    vector_unit(sat_pos, tempx);
-    vector_orthoNorm(tempz, tempx);
-    vector_cross_product(tempz, tempx, tempy);
-    matrix_form3x3(tempx, tempy, tempz, xfrmMatrix);
-}
-
 
 /****************************************************************************/
 //  Write geometry summary table to a text file
@@ -372,8 +322,6 @@ void geom_printToLog(FILE *outputPtr, int index, orbitGeometryStruct *g){
     fprintf(outputPtr,"   Specular Angle (elevation)          %f (deg)\n\n", 90 - g->sx_angle_rad * R2D);
     fprintf(outputPtr,"   Angle to Sx from Rx Orb Frame (az)  %f (deg)\n",  g->angleSxFromRx_rad[0] * R2D);
     fprintf(outputPtr,"   Angle to Sx from Rx Orb Frame (el)  %f (deg)\n\n",g->angleSxFromRx_rad[1] * R2D);
-    fprintf(outputPtr,"   Angle to Sx from Rx Aaron Frm (asc) %f (deg)\n",  90  - g->angleSxFromRx_rad[1] * R2D);
-    fprintf(outputPtr,"   Angle to Sx from Rx Aaron Frm (az)  %f (deg)\n\n",180 - g->angleSxFromRx_rad[0] * R2D);
     fprintf(outputPtr,"   Angle to Sx from Tx Orb Frame (az)  %f (deg)\n",g->angleSxFromTx_rad[0] * R2D);
     fprintf(outputPtr,"   Angle to Sx from Tx Orb Frame (el)  %f (deg)\n",g->angleSxFromTx_rad[1] * R2D);
     fprintf(outputPtr,"   Angle to Sx from Tx Orb Frame (asc) %f (deg)\n\n",90 - g->angleSxFromTx_rad[1] * R2D);
@@ -385,8 +333,6 @@ void geom_printToLog(FILE *outputPtr, int index, orbitGeometryStruct *g){
     fprintf(outputPtr,"   Angle to Tx from Rx Orb Frame (el)  %f (deg)\n",g->angleTxFromRx_rad[1] * R2D);
     fprintf(outputPtr,"   Angle to Rx from Tx Orb Frame (az)  %f (deg)\n",g->angleRxFromTx_rad[0] * R2D);
     fprintf(outputPtr,"   Angle to Rx from Tx Orb Frame (el)  %f (deg)\n\n",g->angleRxFromTx_rad[1] * R2D);
-    //fprintf(outputPtr,"   Angle to Sx from Rx Aaron Fr. (az)  %f (deg)\n",g->angleSxFromRxAaron_rad[0] * R2D);
-    //fprintf(outputPtr,"   Angle to Sx from Rx Aaron Fr. (el)  %f (deg)\n\n",g->angleSxFromRxAaron_rad[1] * R2D);
     fprintf(outputPtr,"   Rx Antenna Gain at Sx (LHCP)        %f (dB)\n", g->antennaRxGainAtSx_LHCP_dB );
     fprintf(outputPtr,"   Rx Antenna Gain at Sx (RHCP)        %f (dB)\n", g->antennaRxGainAtSx_RHCP_dB );
     fprintf(outputPtr,"   Tx Antenna Gain at Sx (RHCP)        %f (dB)\n", g->antennaTxGainAtSx_RHCP_dB );

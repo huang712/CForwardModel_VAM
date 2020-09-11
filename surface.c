@@ -59,8 +59,8 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
     double *tx_vel = geometry->tx_vel;
     double *sx_pos = geometry->sx_pos;  //specular position at specular frame
 
-    double TXP_DB = 10 * log10(pp.Tx_eirp_watt);
     double ATTEN_DB = pp.AtmosphericLoss_dB;
+    TxP = pp.Tx_eirp_watt;
 
     surface.specularGridPt_x_idx = (int)floor(surface.numGridPtsX / 2.0 );	//N_theta/2  (48)
     surface.specularGridPt_y_idx = (int)floor(surface.numGridPtsY / 2.0 );	//N_phi/2	(49)
@@ -130,29 +130,8 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
             surface_getScatteringVector(TSx_unit, RSx_unit, PUT, q_vec); // get q_vec
             sxangle_rad = acos(vector_dot_product(TSx_unit,RSx_unit))/2; //incidence angle
 
-
-            int useOldAntennaAngles = 0;
-
-            if( useOldAntennaAngles ){
-                // get relative angle to grid point as seen from Rx or Tx
-                geom_getRelativeAngleInFrame(geometry->rx_pos, PUT, geometry->SPEC_TO_RX_ORB_FRAME_AARON, angleSxFromRx_rad );
-                geom_getRelativeAngleInFrame(geometry->tx_pos, PUT, geometry->SPEC_TO_TX_ORB_FRAME_AARON, angleSxFromTx_rad );
-
-                // apply correction to Aaron's angles
-                angleSxFromRx_rad[0] -= 180 * D2R;
-                if( angleSxFromRx_rad[0] < -1*pi )
-                    angleSxFromRx_rad[0] += 360*D2R;
-                if( angleSxFromRx_rad[0] > pi )
-                    angleSxFromRx_rad[0] -= 360*D2R;
-            }else{
-                // get relative angle to grid point as seen from Rx or Tx for antenna gain calculations
-                // angleSxFromRx_rad[0],[1] = [theta (azimuth) phi (elevation)]
-                // For RX in Body frame
-                // For TX in Orbit frame
-                geom_getRelativeAngleInFrame(geometry->rx_pos, PUT, geometry->SPEC_TO_RX_BODY_FRAME, angleSxFromRx_rad );
-                geom_getRelativeAngleInFrame(geometry->tx_pos, PUT, geometry->SPEC_TO_TX_ORB_FRAME, angleSxFromTx_rad );
-            }
-
+            geom_getRelativeAngleInFrame(geometry->rx_pos, PUT, geometry->SPEC_TO_RX_BODY_FRAME, angleSxFromRx_rad );
+            geom_getRelativeAngleInFrame(geometry->tx_pos, PUT, geometry->SPEC_TO_TX_ORB_FRAME, angleSxFromTx_rad );
 
             // get Rx & Tx antenna gains for specific angles
             RxG = antenna_getGain_abs(CYGNSS_NADIR_ANT,   LHCP, angleSxFromRx_rad );
@@ -168,11 +147,11 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
             // the scattering equation.
             Area_dS  = pow(surface.resolution_m,2);
             normal   = 1 / n_vec[2]; // Account for change in surface area due to Earth curvature
-            TxP      = pow(10,(TXP_DB/10)); // Tx Power
             lambda   = L1_WAVELENGTH;
             Ti       = ddm.cohIntegrationTime_s;
             extra    = pow(10,((-ATTEN_DB)/10));
             pathloss = 1 / ( pow(R1,2) * pow(R2,2) );
+
             // removed pow(Ti,2) factor
             powerFactor    = TxP * pow(lambda,2) * TxG * RxG * Area_dS * normal * extra * pathloss / pow(4*pi,3); //PowerFactor
 
@@ -183,7 +162,6 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
             // save surface data of eahc grid to buffer
             int idx = SURFINDEX(i, j);   //=i * surface.numGridPtsY + j   i*120+j
             surface.data[idx].delay_s       = ((R1+R2)- geometry->specularDistance_m) / speedlight;
-            //surface.data[idx].doppler_Hz    = geometry->specularDoppler_Hz - doppler_Hz;
             surface.data[idx].doppler_Hz    =  doppler_Hz - geometry->specularDoppler_Hz;
             surface.data[idx].q[0]          = q_vec[0];
             surface.data[idx].q[1]          = q_vec[1];
