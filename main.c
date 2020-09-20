@@ -2,8 +2,6 @@
 // Read a config file as input
 // Read CYGNSS data and wind field data file to produce a simulated DDM and a Jacobian matrix
 
-
-#include <math.h>
 #include <time.h>
 #include <string.h>
 #include "forwardmodel.h"

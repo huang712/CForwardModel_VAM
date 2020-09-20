@@ -1,4 +1,3 @@
-
 //---------------------------------------------------------------------------
 //
 // The DDM parameters are stored in a global structure "ddm", while buffers for

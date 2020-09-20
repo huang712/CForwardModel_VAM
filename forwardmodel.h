@@ -1,6 +1,5 @@
-//
-// Created by Feixiong Huang on 10/19/17.
-// updated 2020/06/30 by Feixiong Huang
+// Created by Feixiong Huang on 2017/10/19/
+// Updated by Feixiong Huang on 2020/09/20
 
 #ifndef CFORWARDMODEL_INPUTOUPUT_H
 #define CFORWARDMODEL_INPUTOUPUT_H

@@ -12,7 +12,6 @@ void forwardModel(struct metadata meta, struct powerParm pp, struct inputWindFie
     surface_initialize(meta);
     ddm_initialize(meta);
     antenna_initialize(pp);
-    //ddmaLUT_initialize();
 
     //load wind field into structure wf
     windField wf;
