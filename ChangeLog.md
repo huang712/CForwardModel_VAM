@@ -1,3 +1,6 @@
+# 2020-09-20
+- Add GPLv3 License
+
 # 2020-09-11
 - remove all functions and variables for Aaron's coordinates
 
