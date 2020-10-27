@@ -20,8 +20,8 @@
 #define PRN_ACF_FILE "/users/fax/CYGNSS/Data/PRN_ACF.bin"
 #define GMF_PATH "/users/fax/CYGNSS/Data/GMF_data/"
 
-#define GMF_OnOff 1 // if use modified CYGNSS GMF model unless Katzberg model
-#define fastMode_OnOff 1 // 1 for fast mode (in initialization.c)
+#define GMF_OnOff 1  // use modified CYGNSS GMF model unless Katzberg model
+#define fastMode_OnOff 1  // 1 for fast mode (in initialization.c)
 
 struct option
 {
@@ -66,16 +66,15 @@ struct metadata
     int utc_sec;
     int prn_code;
     double meas_ddm_sp_index[2];
-    double fresnel_coeff2; //square of reflectivity
+    double fresnel_coeff2;  // square of reflectivity
 };
 
 
 struct powerParm
 {
-    double Rx_antennaGain_dB; //excess receiver antenna gain
+    double Rx_antennaGain_dB;  // excess receiver antenna gain
     double Tx_antennaGain_dB;
     unsigned int AntennaType;
-    //double Tx_Power_dB;
     double Tx_eirp_watt;
     double AtmosphericLoss_dB;
     int Rx_numEl;
@@ -94,7 +93,7 @@ struct inputWindField
     int numPtsLat, numPtsLon, numPts;
     double lat_min_deg, lat_max_deg, lon_min_deg, lon_max_deg;
     double resolution_lat_deg, resolution_lon_deg;
-    struct inputWindFieldPixel *data;  //structure in structure
+    struct inputWindFieldPixel *data;  // structure in structure
 };
 
 struct inputWindFieldPixel
