@@ -1,18 +1,24 @@
+//---------------------------------------------------------------------------
+//
 // Functions for modified wind-MSS model from CYGNSS GMF
-// GMF is a global structure containing coefficients
+// Created by Feixiong Huang on 07/22/20
+//
+//***************************************************************************
+
+// GMF is a global structure defined in gnssr.h containing coefficients
 
 #include "gnssr.h"
 
 double GMF_converWindToMSS( double windSpeedMag_ms, double R2){
-    //Modified model from CYGNSS GMF
-    //mss: mss_iso = mss_x = mss_y
+    // Modified model from CYGNSS GMF
+    // mss: mss_iso = mss_x = mss_y
 
     double u,mss;
     double g;
 
     u = windSpeedMag_ms;
     g = get_g(u);  // CYGNSS sigma0
-    mss=R2/(2*g); // compute MSS
+    mss=R2/(2*g);  // compute MSS
 
 //    printf("R2 = %f\n",R2);
 //    printf("ws = %f\n",u);
@@ -24,7 +30,7 @@ double GMF_converWindToMSS( double windSpeedMag_ms, double R2){
 
 
 void GMF_init(double sp_sxangle_rad){
-    // read GMF coefficients from data
+    // Read GMF coefficients from data
     // sp_sxangle_rad: incidence angle in rad
 
     printf("Read CYGNSS GMF model\n");
@@ -71,14 +77,15 @@ double GMF_getCoef(char name[],double inc_angle_degree){
 }
 
 double get_g(double u){
-    // compute CYGNSS DDMA from wind speed
+    // compute CYGNSS NBRCS(DDMA) from wind speed
+
     double g_fds, g_yslf, g;
 
-    // compute g_fds and g_yslf
+    // Compute g_fds and g_yslf
     g_fds = get_gfds(u); //FDS
     g_yslf = get_gyslf(u); //YSLF
 
-    // compute combined g
+    // Compute combined g
     if (u <= 10){
         g=g_fds;
     }
@@ -152,7 +159,8 @@ double get_dg(double u){
 }
 
 double get_dgfds(double u){
-    // derivative of g_fds respect to wind speed
+    // Derivative of g_fds respect to wind speed
+
     double a0,a1,a2,b0,b1,b2,trans_u_fds;
     double dg_fds;
     a0 = GMF.a0; a1 = GMF.a1; a2 = GMF.a2;
@@ -169,7 +177,8 @@ double get_dgfds(double u){
 }
 
 double get_dgyslf(double u){
-    // derivative of g_yslf respect to wind speed
+    // Derivative of g_yslf respect to wind speed
+
     double c0,c1,c2,d0,d1,trans_u_yslf;
     double dg_yslf;
     c0 = GMF.c0; c1 = GMF.c1; c2 = GMF.c2;

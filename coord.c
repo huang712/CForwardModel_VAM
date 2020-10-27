@@ -4,33 +4,27 @@
 //
 //***************************************************************************
 
-
 #include "gnssr.h"
-
-/****************************************************************************/
-//
 
 void cart2sph( double x[3], double y[3] ){
     // Matlab / mathematicians definition cartesian to spherical coords
-    y[0] = sqrt (pow(x[0],2) + pow(x[1],2) + pow(x[2],2)); //R
-    y[1] = atan2(x[1], x[0]); // Theta  (azimuth)
-    y[2] = atan2(x[2], sqrt(pow(x[0],2) + pow(x[1],2))); //Phi (elevation)
-}
 
-/****************************************************************************/
-//
+    y[0] = sqrt (pow(x[0],2) + pow(x[1],2) + pow(x[2],2));  // R
+    y[1] = atan2(x[1], x[0]);  // Theta (azimuth)
+    y[2] = atan2(x[2], sqrt(pow(x[0],2) + pow(x[1],2)));  //Phi (elevation)
+}
 
 void wgslla2xyz(double x_llh[3], double x_ecef[3]){
     // LLH to ECEF
 
-    const double f = 1/298.257223563;        //   WGS-84 Flattening.
-    const double e = sqrt(f*(2 - f));        //   Eccentricity.
-    const double R_0 = 6378137;              //   WGS-84 equatorial radius (m).
+    const double f = 1/298.257223563;  // WGS-84 Flattening.
+    const double e = sqrt(f*(2 - f));  // Eccentricity.
+    const double R_0 = 6378137;  // WGS-84 equatorial radius (m).
 
-    //   Compute East-West Radius of curvature at current position
+    // Compute East-West Radius of curvature at current position
     const double R_E = R_0 / sqrt(1 - pow(e*sin(x_llh[0]),2));
 
-    //   Compute ECEF coordinates
+    // Compute ECEF coordinates
     x_ecef[0] = (R_E + x_llh[2])*cos(x_llh[0])*cos(x_llh[1]);
     x_ecef[1] = (R_E + x_llh[2])*cos(x_llh[0])*sin(x_llh[1]);
     x_ecef[2] = ((1 - pow(e,2))*R_E + x_llh[2])*sin(x_llh[0]);
@@ -64,19 +58,19 @@ void wgsxyz2lla( double *x_ecef, double *x_lla ) {
     double alt,z_0,e_p,lat;
 
     // paramters describing the WGS-84 reference ellipsoid
-    f = 1/298.257223563;        //   WGS-84 Flattening.
-    e = sqrt(f*(2 - f));        //   Eccentricity.
-    omega_ie = 7.292115e5;      //   WGS-84 Earth rate (rad/s).
-    R_0 = 6378137;              //   WGS-84 equatorial radius (m).
-    R_P = R_0*(1 - f);          //   Polar radius (m).
-    mu_E = 3.986004418e14;      //   WGS-84 Earth's gravitational
+    f = 1/298.257223563;    // WGS-84 Flattening
+    e = sqrt(f*(2 - f));    // Eccentricity
+    omega_ie = 7.292115e5;  // WGS-84 Earth rate (rad/s)
+    R_0 = 6378137;          // WGS-84 equatorial radius (m)
+    R_P = R_0*(1 - f);      // Polar radius (m)
+    mu_E = 3.986004418e14;  // WGS-84 Earth's gravitational
 
-    //  Place holder for output and temporary variables
+    // Place holder for output and temporary variables
     x = x_ecef[0];
     y = x_ecef[1];
     z = x_ecef[2];
 
-    //  Calculate longitude
+    // Calculate longitude
     lon = atan2(y,x)*R2D;
 
     p = sqrt(pow(x,2) + pow(y,2));
@@ -97,8 +91,7 @@ void wgsxyz2lla( double *x_ecef, double *x_lla ) {
     V = sqrt(pow(k_5,2) + (1 - pow(e,2))*pow(z,2));
     alt = U*(1 - (pow(R_P,2)/(R_0*V)));
 
-    //   Compute additional values required for computing
-    //   latitude
+    // Compute additional values required for computing latitude
     z_0 = (pow(R_P,2)*z)/(R_0*V);
     e_p = (R_0/R_P)*e;
     lat = atan((z + z_0*pow(e_p,2))/p) * R2D;

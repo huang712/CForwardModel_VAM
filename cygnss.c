@@ -1,6 +1,10 @@
+//---------------------------------------------------------------------------
 //
-// Created by Feixiong Huang on 1/22/18.
+// Reading CYGNSS L1 data
+// Created by Feixiong Huang on 1/22/18
 //
+//***************************************************************************
+
 #include <stdio.h>
 #include "cygnss.h"
 #include <netcdf.h>
@@ -19,23 +23,23 @@ void readL1data(char L1dataFilename[], int sampleIndex, int ddm_index, struct CY
     // Open the file
     if ((retval = nc_open(L1dataFilename, NC_NOWRITE, &ncid))) ERR(retval);
 
-    //read and check number of samples of the data
+    // Read and check number of samples of the data
     if ((retval = nc_inq_dimid(ncid, "sample", &sample_id))) ERR(retval);
     if ((retval = nc_inq_dimlen(ncid, sample_id, &sample_num))) ERR(retval);
     if (sampleIndex > (int)sample_num-1) printf("sample index is larger than length of data\n");
 
-    //read CYGNSS spacecraft ID 1-8
+    // Read CYGNSS spacecraft ID 1-8
     if ((retval = nc_inq_varid(ncid, "spacecraft_num", &sc_num_id))) ERR(retval);
     if ((retval = nc_get_var_int(ncid, sc_num_id, &l1data->sc_num))) ERR(retval);
 
-    //read DDM power (just for debug, not big cost on computation)
+    // Read DDM power (just for debugging, not big cost on computation)
     size_t start[4]={sampleIndex,ddm_index,0,0};
     size_t count[4]={1,1,17,11};
     int power_analog_id;
     if ((retval = nc_inq_varid(ncid, "power_analog", &power_analog_id))) ERR(retval);
     if ((retval = nc_get_vara_double(ncid, power_analog_id, start, count, &l1data->DDM_power[0][0]))) ERR(retval);
 
-    //read variables
+    // Read other variables
     l1data->rx_position_ecef_m[0] = readnc_int_1d(ncid, "sc_pos_x", sampleIndex);
     l1data->rx_position_ecef_m[1] = readnc_int_1d(ncid, "sc_pos_y", sampleIndex);
     l1data->rx_position_ecef_m[2] = readnc_int_1d(ncid, "sc_pos_z", sampleIndex);
@@ -59,8 +63,6 @@ void readL1data(char L1dataFilename[], int sampleIndex, int ddm_index, struct CY
 
     l1data->utc_sec = readnc_float_1d(ncid, "ddm_timestamp_utc", sampleIndex);
     l1data->quality_flags = readnc_long_2d(ncid, "quality_flags", sampleIndex, ddm_index);
-    //l1data->ddm_peak_delay_row = readnc_int_2d(ncid, "brcs_ddm_peak_bin_delay_row", sampleIndex, ddm_index);
-    //l1data->ddm_peak_dopp_col = readnc_int_2d(ncid, "brcs_ddm_peak_bin_dopp_col", sampleIndex, ddm_index);
     l1data->ddm_sp_delay_row = readnc_float_2d(ncid, "brcs_ddm_sp_bin_delay_row", sampleIndex, ddm_index);
     l1data->ddm_sp_dopp_col = readnc_float_2d(ncid, "brcs_ddm_sp_bin_dopp_col", sampleIndex, ddm_index);
     l1data->index = sampleIndex;
@@ -140,6 +142,7 @@ float readnc_float_2d(int ncid, char varName[], int index, int ddm_index){
 }
 
 void DDMobs_saveToFile(struct CYGNSSL1 l1data, int index, int pathType, char saveDir[1000]) {
+    // Save observed DDM into file
 
     double val;
     char filename[50];

@@ -1,9 +1,9 @@
 //---------------------------------------------------------------------------
 //
-//  This file is dedicated to solving for the specular point location given
-//  the Rx and Tx positions in ECEF coordinates.  This file has a single point
-//  of entry (solveSpecularPt).  Note that it accurately accounts for an
-//  WGS-84 ellipsoidal Earth.
+// This file is dedicated to solving for the specular point location given
+// the Rx and Tx positions in ECEF coordinates.  This file has a single point
+// of entry (solveSpecularPt).  Note that it accurately accounts for an
+// WGS-84 ellipsoidal Earth.
 //
 /****************************************************************************/
 
@@ -18,7 +18,7 @@ int determineLOSSatelliteVis( double rx_pos_ecef[3], double tx_pos_ecef[3] );
 
 
 /****************************************************************************/
-//  Solve for Specular Point position and velocity in ECEF on WGS-84 Earth.
+// Solve for Specular Point position and velocity in ECEF on WGS-84 Earth.
 
 void solveSpecularPt(double rx_pos_ecef[3], double tx_pos_ecef[3], double sx_pos_ecef[3],
                      double rx_vel_ecef[3], double tx_vel_ecef[3], double sx_vel_ecef[3],
@@ -74,7 +74,7 @@ void solveSpecularPt(double rx_pos_ecef[3], double tx_pos_ecef[3], double sx_pos
 }
 
 /****************************************************************************/
-//  Solve for Specular Point on WGS-84 Ellipsoid
+// Solve for Specular Point on WGS-84 Ellipsoid
 //
 // Solve for specular point on WGS84 elllipsoidal Earth by making iterative
 // calls to Joel's spherical Earth spcular point solver.
@@ -126,7 +126,7 @@ int solveSpecularPtPosition(double rx_pos_ecef[3], double tx_pos_ecef[3],
             return(0);
 
         vector_subtract(S, Stemp, temp);
-        correction = r * abs(vector_norm(temp));
+        correction = r * fabs(vector_norm(temp)); // use fabs
 
         S[0] = Stemp[0];
         S[1] = Stemp[1];
@@ -154,7 +154,7 @@ double get_earthRadius_m( double x_ecef[3] ){
 }
 
 /****************************************************************************/
-//  Solve for Specular Point on Spherical Earth
+// Solve for Specular Point on Spherical Earth
 /****************************************************************************/
 
 int solveSpecularPt_sphericalEarth(double rx_pos_ecef[3], double tx_pos_ecef[3],
@@ -210,7 +210,7 @@ int solveSpecularPt_sphericalEarth(double rx_pos_ecef[3], double tx_pos_ecef[3],
     double rs_unit[3], ts_unit[3];
     vector_subtract(rx_pos_ecef, sx_pos_ecef_unit, rs_unit); vector_unit(rs_unit, rs_unit);
     vector_subtract(tx_pos_ecef, sx_pos_ecef_unit, ts_unit); vector_unit(ts_unit, ts_unit);
-    double angleDiff_deg =  abs( acos(vector_dot_product(rs_unit,sx_pos_ecef_unit))
+    double angleDiff_deg =  fabs( acos(vector_dot_product(rs_unit,sx_pos_ecef_unit))  // use fabs
                                  - acos(vector_dot_product(ts_unit,sx_pos_ecef_unit)) ) * R2D;
     if( angleDiff_deg > MIN_SPECULAR_ANGLE_TOL_DEG ){
         printf("Error: Specular point failed angle check. (difference = %f deg)\n",angleDiff_deg);
@@ -252,7 +252,7 @@ double minPositiveRoot( double polynomCoefs[5] ){
 }
 
 /****************************************************************************/
-//  Check LOS visibility between Rx and Tx
+// Check LOS visibility between Rx and Tx
 
 int determineLOSSatelliteVis( double rx_pos_ecef[3], double tx_pos_ecef[3] ){
 
@@ -295,8 +295,8 @@ int determineLOSSatelliteVis( double rx_pos_ecef[3], double tx_pos_ecef[3] ){
 }
 
 /****************************************************************************/
-//  Roots of Polynomials, from Numerical Recipes C9-5
-//  TODO: Check licensing issues
+// Roots of Polynomials, from Numerical Recipes C9-5
+// TODO: Check licensing issues
 /****************************************************************************/
 
 #define EPSS 1.0e-5 // was e-7, but I changed it to prevent "TOO MANY ITERATIONS" error

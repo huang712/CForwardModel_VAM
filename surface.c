@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
-//  This portion of the E2ES is responsible for creating a gridded surface
-//  and evaluating a number of parameters over that surface
+// This portion of the E2ES is responsible for creating a gridded surface
+// and evaluating a number of parameters over that surface
 //
 //****************************************************************************/
 
@@ -11,7 +11,7 @@
 double get_dmdx(double ws);
 
 double get_dmdx (double ws){
-    //compute derivative of MSS respect to wind speed in Katzberg model
+    // Compute derivative of MSS respect to wind speed in Katzberg model
     if(ws>=0 && ws<=3.49) {return 1.143e-3;}
     else if(ws>3.49 && ws<=46) {return 6.858e-3/ws;}
     else if(ws>46) {return 4.69773e-4;}
@@ -45,7 +45,8 @@ void surface_cleanup(void){
     free(surface.data);
 }
 
-void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, struct powerParm pp){   //use surfType=0    3.1.1   use geometry data (ECEF)
+void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, struct powerParm pp){
+    //use surfType=0 3.1.1 use geometry data (ECEF)
 
     double temp_vec[9];
     double PUT[3],RSx_unit[3],TSx_unit[3], q_vec[3], n_vec[3];
@@ -53,11 +54,11 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
     double dopplerRx_Hz,dopplerTx_Hz,doppler_Hz,sxangle_rad;
     double angleSxFromRx_rad[2], angleSxFromTx_rad[2];
 
-    double *rx_pos = geometry->rx_pos;	//specular frame
+    double *rx_pos = geometry->rx_pos;	// specular frame
     double *tx_pos = geometry->tx_pos;
     double *rx_vel = geometry->rx_vel;
     double *tx_vel = geometry->tx_vel;
-    double *sx_pos = geometry->sx_pos;  //specular position at specular frame
+    double *sx_pos = geometry->sx_pos;  // specular position at specular frame
 
     double ATTEN_DB = pp.AtmosphericLoss_dB;
     TxP = pp.Tx_eirp_watt;
@@ -65,9 +66,9 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
     surface.specularGridPt_x_idx = (int)floor(surface.numGridPtsX / 2.0 );	//N_theta/2  (48)
     surface.specularGridPt_y_idx = (int)floor(surface.numGridPtsY / 2.0 );	//N_phi/2	(49)
 
-    // we have a quick mode that only does four corners
+    // We have a quick mode that only does four corners
     int i_inc, j_inc, i0, i1, j0, j1;
-    switch(surfType){  //surfType=0
+    switch(surfType){  // surfType=0
         case 1:
             i0    = 0;
             j0    = 0;
@@ -101,18 +102,16 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
 
             //printf("i = %d, j = %d \n",i,j);
 
-            // get the coordinates of the surface grid pt, PUT
-            switch (surface.surfaceCurvatureType) { //Type=1=spherical
-                case 1: grid_getGridPt_sphericalEarth(i, j, sx_pos, PUT, vector_norm(geometry->sx_pos)); break; //sx_pos(specular position), PUT(specular frame coordinates of the patch i,j; norm(earth radius))
+            // Get the coordinates of the surface grid pt, PUT
+            switch (surface.surfaceCurvatureType) {  // Type = 1 (spherical)
+                //sx_pos (specular position), PUT (specular frame coordinates of the patch i,j; norm(earth radius))
+
+                case 1: grid_getGridPt_sphericalEarth(i, j, sx_pos, PUT, vector_norm(geometry->sx_pos)); break;
                 case 2: grid_getGridPt_flatEarth(i, j, sx_pos, PUT); break;
                 default: fprintf(errPtr,"Error: Bad surfaceCurvatureType in surface_calcGeom"); exit(0);
             }
 
-            // correction for coordinate system (should technically correct direction too)
-            //PUT[0] = -1 * PUT[0];
-
             vector_unit(PUT, n_vec);
-
             vector_subtract(rx_pos,PUT,temp_vec);
             R2 = vector_norm(temp_vec);         // distance between Rx and PUT
             vector_unit(temp_vec, RSx_unit);    // scattering point to receiver unit vector
@@ -128,14 +127,14 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
 
             // scattering vector and incidence angle
             surface_getScatteringVector(TSx_unit, RSx_unit, PUT, q_vec); // get q_vec
-            sxangle_rad = acos(vector_dot_product(TSx_unit,RSx_unit))/2; //incidence angle
+            sxangle_rad = acos(vector_dot_product(TSx_unit,RSx_unit))/2; // incidence angle
 
             geom_getRelativeAngleInFrame(geometry->rx_pos, PUT, geometry->SPEC_TO_RX_BODY_FRAME, angleSxFromRx_rad );
             geom_getRelativeAngleInFrame(geometry->tx_pos, PUT, geometry->SPEC_TO_TX_ORB_FRAME, angleSxFromTx_rad );
 
             // get Rx & Tx antenna gains for specific angles
             RxG = antenna_getGain_abs(CYGNSS_NADIR_ANT,   LHCP, angleSxFromRx_rad );
-            TxG = 1; // Transmitter antenna pattern gain
+            TxG = 1;  // Transmitter antenna pattern gain
             //TxG = antenna_getGain_abs(GPS_SAT_ANT,        RHCP, angleSxFromTx_rad );
 
             // get relative angle to grid point as seen from Rx or Tx (angles for rain ...)
@@ -143,10 +142,9 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
             //geom_getRelativeAngleInFrame(geometry->rx_pos, PUT, geometry->SPEC_TO_RX_BODY_FRAME, angleSxFromRx_rad );
             //geom_getRelativeAngleInFrame(geometry->tx_pos, PUT, geometry->SPEC_TO_TX_ORB_FRAME, angleSxFromTx_rad );
 
-            // calculate the geometry-dependent, windfield-independent power factor for
-            // the scattering equation.
+            // calculate the geometry-dependent, windfield-independent power factor for the scattering equation
             Area_dS  = pow(surface.resolution_m,2);
-            normal   = 1 / n_vec[2]; // Account for change in surface area due to Earth curvature
+            normal   = 1 / n_vec[2];  // Account for change in surface area due to Earth curvature
             lambda   = L1_WAVELENGTH;
             Ti       = ddm.cohIntegrationTime_s;
             extra    = pow(10,((-ATTEN_DB)/10));
@@ -170,10 +168,10 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
             surface.data[idx].powerFactor   = powerFactor;
 
             // to solve for rain atten. we'll need the elevation angles across surface
-            surface.data[idx].rx_elevationAngle_rad = geometry->rx_angle_rad;// asin(RSx_unit[2]); at SP
-            surface.data[idx].tx_elevationAngle_rad = geometry->tx_angle_rad;// asin(TSx_unit[2]); at SP
+            surface.data[idx].rx_elevationAngle_rad = geometry->rx_angle_rad;  // asin(RSx_unit[2]); at SP
+            surface.data[idx].tx_elevationAngle_rad = geometry->tx_angle_rad;  // asin(TSx_unit[2]); at SP
 
-            // these parameters aren't used except for debugging purposes
+            // These parameters aren't used except for debugging purposes
             surface.data[idx].i             = i;
             surface.data[idx].j             = j;
             surface.data[idx].position[0]   = PUT[0];
@@ -183,7 +181,7 @@ void surface_calcGeomOverSurface(orbitGeometryStruct *geometry, int surfType, st
             surface.data[idx].antennaGainTx_abs = TxG;
             surface.data[idx].pathloss      = pathloss;
 
-            // antenna pattern angles over surface
+            // Antenna pattern angles over surface
             surface.data[idx].angleSxFromRx_theta_rad = angleSxFromRx_rad[0];
             surface.data[idx].angleSxFromRx_phi_rad   = angleSxFromRx_rad[1];
             surface.data[idx].angleSxFromTx_theta_rad = angleSxFromTx_rad[0];
@@ -265,17 +263,17 @@ void surface_getScatteringVector(double TSx_unit[3], double RSx_unit[3], double 
 }
 
 /****************************************************************************/
-//  Evaluate Sigma0 Over Surface
+// Evaluate Sigma0 Over Surface
 /****************************************************************************/
 
-void surface_calcSigma0OnSurface(int windModelType){	//compute RCS at surface (68)
-    // this function assumes that the geometric and windfield properties of the
-    // surface data have already been filled in.  It calculates the sigma0
-    // using a bivariate Gaussian slope pdf
+void surface_calcSigma0OnSurface(int windModelType){  //compute RCS at surface (68)
+    // this function assumes that the geometric and windfield properties of
+    // the surface data have already been filled in.
+    // It calculates the sigma0 using a bivariate Gaussian slope pdf
 
     double ws,mss_x,mss_y,mss_b,sxangle,q_vec[3],sigma0,sigma0_dP,x,y,P,Q4,R2,dP;
     double mss_iso, sp_sxangle, dmdx;
-    sp_sxangle = surface.data[sp_index].sx_angle_rad; //incidence angle at specular point
+    sp_sxangle = surface.data[sp_index].sx_angle_rad;  // incidence angle at specular point
 
     if (GMF_OnOff==1){
         GMF_init(sp_sxangle);
@@ -287,10 +285,7 @@ void surface_calcSigma0OnSurface(int windModelType){	//compute RCS at surface (6
 
         // evaluate slope pdf (Eqn 40 [ZV 2000])
         ws = surface.windData[idx].windSpeed_ms;
-        mss_x    = surface.windData[idx].mss_x;
-        mss_y    = surface.windData[idx].mss_y;
-        mss_b    = surface.windData[idx].mss_b;
-        sxangle  = surface.data[idx].sx_angle_rad;  //incidence angle
+        sxangle  = surface.data[idx].sx_angle_rad;  // incidence angle
         q_vec[0] = surface.data[idx].q[0];
         q_vec[1] = surface.data[idx].q[1];
         q_vec[2] = surface.data[idx].q[2];
@@ -301,43 +296,46 @@ void surface_calcSigma0OnSurface(int windModelType){	//compute RCS at surface (6
 //        printf("ws = %f\n",ws);
 //        printf("mss = %f\n",mss_iso);
 
-        // evaluate sigma0 (Eqn 34 [ZV 2000])
+        //******************** evaluate sigma0 (Eqn 34 [ZV 2000]) ********************
 
-        //the change of R2 is slight in the glistenning zone
+        // The change of R2 is slight in the glistenning zone
         R2 = cyg_R2; // use the one from CYGNSS
-        //R2 = pow(cabs(reflectionCoef(sxangle)),2);   //reflection coefficient;
+        //R2 = pow(cabs(reflectionCoef(sxangle)),2);   // reflection coefficient;
 
         Q4 = pow(vector_norm(q_vec),4) / pow(q_vec[2],4);
 
         if (GMF_OnOff == 1){
-            mss_iso = GMF_converWindToMSS(ws, R2); //modified CYGNSS model
+            mss_iso = GMF_converWindToMSS(ws, R2); // modified CYGNSS model
             dmdx = get_dmdx_GMF(R2,ws);
         }
         else {
-            mss_iso=(mss_x+mss_y)/2; //Katzberg model
+            mss_x = surface.windData[idx].mss_x;
+            mss_y = surface.windData[idx].mss_y;
+            mss_b = surface.windData[idx].mss_b;
+            mss_iso=(mss_x+mss_y)/2; // Katzberg model
             dmdx = get_dmdx(ws);
         }
 
         //printf("ws = %f\n",ws);
         //printf("%f %f\n",get_dmdx_GMF(R2,ws),get_dmdx(ws));
 
-        if (windModelType == 0){    //isotropic model
+        if (windModelType == 0){  // isotropic model
             mss_b=0;
             P=1/(2*pi*mss_iso) * exp(-(pow(x,2)+pow(y,2))/(2*mss_iso));
-            sigma0 = pi * R2 * Q4 * P;    //RCS  (68)
+            sigma0 = pi * R2 * Q4 * P;  //RCS (68)
         }
-        if (windModelType == 1){    ////anisotropic model
+        if (windModelType == 1){  // anisotropic model
             P = 1/(2*pi*sqrt(mss_x*mss_y)*sqrt(1-pow(mss_b,2))) *
-                exp(  -1/(2*(1-pow(mss_b,2))) * ( pow(x,2) / mss_x -
-                                                  2*mss_b* (x*y)/sqrt(mss_x*mss_y) + pow(y,2) / mss_y )); // PDF (61)
-            sigma0 = pi * R2 * Q4 * P;    //RCS  (68)
+                exp(-1/(2*(1-pow(mss_b,2))) * ( pow(x,2) / mss_x -
+                2*mss_b* (x*y)/sqrt(mss_x*mss_y) + pow(y,2) / mss_y ));  // PDF (61)
+            sigma0 = pi * R2 * Q4 * P;  //RCS (68)
         }
 
-        dP       = -1/(2*pi) * ( 1/pow(mss_iso,2) +                   //dP for isotropic mss
-                                 (-1.0/2 * (pow(x,2) + pow(y,2))/pow(mss_iso,3) ) ) *
-                   exp(  -1.0/2 * ( ( pow(x,2) + pow(y,2) )/ mss_iso )) * dmdx;
+        // dP for isotropic mss
+        dP = -1/(2*pi) * ( 1/pow(mss_iso,2) + (-1.0/2 * (pow(x,2) + pow(y,2))/pow(mss_iso,3) ) ) *
+                exp( -1.0/2 * ( ( pow(x,2) + pow(y,2) ) / mss_iso )) * dmdx;
 
-        sigma0_dP = pi * R2 * Q4 * dP;  //derivative of sigma0 (used for H matrix)
+        sigma0_dP = pi * R2 * Q4 * dP;  // derivative of sigma0 (used for H matrix)
 
         /*
         if (idx==0 ||idx == 7260 || idx==14399){
@@ -368,13 +366,13 @@ complex double reflectionCoef(double Sxangle) {
 
     double st,ct,tet;
     double complex eps,esq,ev1,ev2,b1,b2;
-    tet = pi/2-Sxangle; //elevation angle
+    tet = pi/2-Sxangle; // elevation angle
     eps = 74.62 + I*51.92;
     st  = sin(tet);
     ct  = cos(tet);
     esq = csqrt(eps-pow(ct,2));
-    ev1 = (eps*st-esq)/(eps*st+esq); //Rvv
-    ev2 = (st-esq)/(st+esq);        //Rhh
+    ev1 = (eps*st-esq)/(eps*st+esq); // Rvv
+    ev2 = (st-esq)/(st+esq);        // Rhh
     b1  = (ev1-ev2)/2; // Rrl, Rlr Right-to-left circular polarization (LHCP)
     //b2  = (ev1+ev2)/2; // Rrr, Rll Right-to-right circular polarization (RHCP)
     return(b1);
@@ -384,16 +382,13 @@ complex double reflectionCoef(double Sxangle) {
 //  Put all the pieces together to find the Total Scattered Power
 /****************************************************************************/
 
-void surface_composeTotalScatPowrOnSurface(int type){  //type=1
-    // in some cases, we want sigma0 and in others, we want sqrt(sigma0) with phase.
+void surface_composeTotalScatPowrOnSurface(int type){  // type = 1
+    // In some cases, we want sigma0 and in others, we want sqrt(sigma0) with phase.
     // I don't like this function, but here is how we handle both cases currently.
     switch (type) {
         case 1: // no speckle.  no mask
             for (int idx = 0; idx < surface.numGridPts; idx++){
-//                surface.data[idx].total = surface.data[idx].powerFactor * surface.data[idx].sigma0
-//                * surface.data[idx].mask * surface.data[idx].rainAtten_abs ;
-//                surface.data[idx].total_dP = surface.data[idx].powerFactor * surface.data[idx].sigma0_dP
-//                * surface.data[idx].mask * surface.data[idx].rainAtten_abs ;
+                // Remove surface.data[idx].mask for total and total_dP
                 surface.data[idx].total = surface.data[idx].powerFactor * surface.data[idx].sigma0
                                           * surface.data[idx].rainAtten_abs ;
                 surface.data[idx].total_dP = surface.data[idx].powerFactor * surface.data[idx].sigma0_dP
@@ -402,12 +397,7 @@ void surface_composeTotalScatPowrOnSurface(int type){  //type=1
             break;
         case 2: // speckle, so sqrt of scattered power and phase factor - this method has problems
             for (int idx = 0; idx < surface.numGridPts; idx++){
-//                surface.data[idx].total =
-//                        sqrt(surface.data[idx].powerFactor * surface.data[idx].sigma0 * surface.data[idx].rainAtten_abs)
-//                        * surface.data[idx].phaseShiftFactor0 * surface.data[idx].phaseShiftFactor1 * surface.data[idx].mask;
-//                surface.data[idx].total_dP =
-//                        sqrt(surface.data[idx].powerFactor * surface.data[idx].sigma0_dP * surface.data[idx].rainAtten_abs)
-//                        * surface.data[idx].phaseShiftFactor0 * surface.data[idx].phaseShiftFactor1 * surface.data[idx].mask;
+                // Remove surface.data[idx].mask for total and total_dP
                 surface.data[idx].total =
                         sqrt(surface.data[idx].powerFactor * surface.data[idx].sigma0 * surface.data[idx].rainAtten_abs)
                         * surface.data[idx].phaseShiftFactor0 * surface.data[idx].phaseShiftFactor1;
@@ -427,19 +417,18 @@ void surface_composeTotalScatPowrOnSurface(int type){  //type=1
 //  Surface Wind Field
 /****************************************************************************/
 
-void surface_loadSurfWindfield(windField *wf, int wfNum){	//load wind to surface frame   //wfNum=0;
+void surface_loadSurfWindfield(windField *wf, int wfNum){  // load wind to surface frame
     double x_m, y_m;
-    wf->locCurrentPt = wfNum;  //0
+    wf->locCurrentPt = wfNum;  // 0
 
     if( wf->type == 1 )
         fprintf(outputPtr,"Uniform wind case (%f m/s) ...\n\n", wf->data[wf->locCurrentPt].windSpeed_ms );
 
-    for(int i=0; i<surface.numGridPts; i++){ //0:14400
+    for(int i=0; i<surface.numGridPts; i++){  // 0:14400
         x_m = surface.specularLoactionX_m + surface.data[i].windFieldLocation_x_m;
         y_m = surface.specularLoactionY_m + surface.data[i].windFieldLocation_y_m;
 
-        wind_getWindFieldAtXY( wf, x_m, y_m, &(surface.windData[i]) );  //important: copy wf to surface.windData[i]
-
+        wind_getWindFieldAtXY( wf, x_m, y_m, &(surface.windData[i]) );  // important: copy wf to surface.windData[i]
     }
 }
 
@@ -472,9 +461,9 @@ double getRainAtten_abs( double theta1_rad, double theta2_rad, double h_km, doub
     // h_km:       freezing height,
     // R_mmhr:     rain rate (mm/hr)
     // coef's:
-    //   a = 24.312e-5; b = 0.9567;   ITU R838-3  http://www.itu.int/rec/R-REC-P.838-3-200503-I/en
-    //   a = 22.326e-5; b = 1.15;     email/paper
-    //   (ITU predicts lower attenuation, but is probably better, so we'll use it)
+    // a = 24.312e-5; b = 0.9567;   ITU R838-3  http://www.itu.int/rec/R-REC-P.838-3-200503-I/en
+    // a = 22.326e-5; b = 1.15;     email/paper
+    // (ITU predicts lower attenuation, but is probably better, so we'll use it)
 
     double a             = 24.312e-5;
     double b             = 0.9567;
@@ -484,14 +473,14 @@ double getRainAtten_abs( double theta1_rad, double theta2_rad, double h_km, doub
 }
 
 /****************************************************************************/
-//  Speckle
+// Speckle
 /****************************************************************************/
 
 void surface_initSpeckle(void){
 
     double updatePeriod_s = ddm.cohIntegrationTime_s;
 
-    surface.speckleType = 2; // hardcoded for now
+    surface.speckleType = 2;  // hardcoded for now
 
     switch (surface.speckleType) {
         case 0: // speckle off, do nothing
@@ -542,15 +531,15 @@ void surface_updateSpeckle(void){
 /****************************************************************************/
 
 void surface_createSurfaceMask(void){
-    int i, j=0;//add =0
+    int i, j=0;
     double val, maxDelay_s,maxDoppler_Hz,minDoppler_Hz;
     double maxDelayEllipse_s;
     double maxDopplerEllipse_Hz, minDopplerEllipse_Hz;
 
     // find max delay & Doppler on surface
-    maxDelay_s    = surface.data[SURFINDEX(0, j)].delay_s;     //just initial value
-    minDoppler_Hz = surface.data[SURFINDEX(0, j)].doppler_Hz;  //just initial value
-    maxDoppler_Hz = surface.data[SURFINDEX(0, j)].doppler_Hz;  //just initial value
+    maxDelay_s    = surface.data[SURFINDEX(0, j)].delay_s;     // just initial value
+    minDoppler_Hz = surface.data[SURFINDEX(0, j)].doppler_Hz;  // just initial value
+    maxDoppler_Hz = surface.data[SURFINDEX(0, j)].doppler_Hz;  // just initial value
 
     for (i = 0; i < surface.numGridPts; i++) {
         val = surface.data[i].delay_s;
@@ -562,14 +551,14 @@ void surface_createSurfaceMask(void){
 
     // determine DDM working range (i.e the max complete
     // delay "ellipse" on the surface by looking at the edges of the surface
-    int cx = (int)floor( (1.0 * surface.numGridPtsX ) / 2 );//45
-    int cy = (int)floor( (1.0 * surface.numGridPtsY ) / 2 );//45
-    double val1  = surface.data[SURFINDEX(0, cy)].delay_s;//[0 45]
-    double val2  = surface.data[SURFINDEX(surface.numGridPtsX - 1, cy)].delay_s;//[89 45]
-    double val3  = surface.data[SURFINDEX(cx,0)].delay_s;//[45 0]
-    double val4  = surface.data[SURFINDEX(cx, surface.numGridPtsY - 1)].delay_s;//[45 89]
+    int cx = (int)floor( (1.0 * surface.numGridPtsX ) / 2 );
+    int cy = (int)floor( (1.0 * surface.numGridPtsY ) / 2 );
+    double val1  = surface.data[SURFINDEX(0, cy)].delay_s;
+    double val2  = surface.data[SURFINDEX(surface.numGridPtsX - 1, cy)].delay_s;
+    double val3  = surface.data[SURFINDEX(cx,0)].delay_s;
+    double val4  = surface.data[SURFINDEX(cx, surface.numGridPtsY - 1)].delay_s;
     maxDelayEllipse_s = val1;
-    if( val2 < maxDelayEllipse_s ) maxDelayEllipse_s = val2;//change to max delay >
+    if( val2 < maxDelayEllipse_s ) maxDelayEllipse_s = val2;  // change to max delay
     if( val3 < maxDelayEllipse_s ) maxDelayEllipse_s = val3;
     if( val4 < maxDelayEllipse_s ) maxDelayEllipse_s = val4;
 
@@ -577,7 +566,7 @@ void surface_createSurfaceMask(void){
     //maxDelayEllipse_s = maxDelayEllipse_s - 2.0/chipRate_cs;
 
     // find the range of Doppler that is within that max delay ellipse
-    maxDopplerEllipse_Hz = minDoppler_Hz;//just initilize
+    maxDopplerEllipse_Hz = minDoppler_Hz;  // just initilize
     minDopplerEllipse_Hz = minDoppler_Hz;
     for (i = 0; i < surface.numGridPtsX; i++) {
         for (j = 0; j < surface.numGridPtsY; j++) {
@@ -655,7 +644,7 @@ void surface_resetToZero(void){
 }
 
 
-void surface_saveWindToFile(void) {  //added by Feixiong
+void surface_saveWindToFile(void) {  // added by Feixiong
     FILE *outp = fopen("surfaceWind.dat", "wb");
     for (int i = 0;i<surface.numGridPts;i++) {
         fwrite(&surface.windData[i].windSpeed_ms, sizeof(double), 1, outp);
@@ -663,7 +652,7 @@ void surface_saveWindToFile(void) {  //added by Feixiong
     fclose(outp);
 }
 
-void surface_saveDopplerToFile(void){  //added by Feixiong
+void surface_saveDopplerToFile(void){  // added by Feixiong
     FILE *outp = fopen("surfaceDoppler.dat","wb");
     for(int i=0;i<surface.numGridPts;i++){
         fwrite(&surface.data[i].doppler_Hz, sizeof(double),1,outp);
@@ -671,7 +660,7 @@ void surface_saveDopplerToFile(void){  //added by Feixiong
     fclose(outp);
 }
 
-void surface_saveDelayToFile(void) {  //added by Feixiong
+void surface_saveDelayToFile(void) {  // added by Feixiong
     FILE *outp = fopen("surfaceDelay.dat", "wb");
     for (int i = 0;i < surface.numGridPts;i++) {
         fwrite(&surface.data[i].delay_s, sizeof(double), 1, outp);

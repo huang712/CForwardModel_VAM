@@ -1,3 +1,8 @@
+# 2020-10-26
+- Clean the code using Google style
+- Minor changes to specular.c (use fabs in stead of abs)
+- No longer calculate Katzberg model if GMF_OnOff==1 (wind.c and surface.c)
+
 # 2020-09-20
 - Add GPLv3 License
 
@@ -7,9 +12,6 @@
 # 2020-09-06
 - Add transformations for attitude dynamics (validated)
 - Use long int for quality_flags, double for utc_sec
-
-The current CYGNSS antenna pattern (V6) is from version 2.1
-We need the latest antenna pattern for version 3.0
 
 # 2020-08-20
 - Remove checks on quality_flags in main.c

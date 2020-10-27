@@ -1,3 +1,9 @@
+//---------------------------------------------------------------------------
+//
+// Header file from CYGNSS E2ES
+//
+//***************************************************************************
+
 // be careful about SURF index (details in my Thesis)
 // 1. wind_initialize
 // 2. wind_interpolated
@@ -39,16 +45,15 @@
 
 FILE *outputPtr, *errPtr, *consolePtr;
 
-
-//***** Global variable *******************************************************************/
-//grid transformation
+//********************* Global variables *********************//
+// grid transformation
 int bi_index0[14400][4];  // for 1km in SURF
-double bi_weight0[14400][4]; // for 1km in SURF
-int sp_index; //index of specular point on the 120 X 120 grid (global variable)
-double cyg_R2; // CYGNSS square of reflectivity at SP (very slight change on incidence angle)
+double bi_weight0[14400][4];  // for 1km in SURF
+int sp_index;  // index of specular point on the 120 X 120 grid (global variable)
+double cyg_R2;  // CYGNSS square of reflectivity at SP (very slight change on incidence angle)
 
 //******************************************************************************/
-//GMF.c
+// GMF.c
 double GMF_converWindToMSS( double windSpeedMag_ms, double R2);
 void GMF_init(double sp_sxangle);
 double GMF_getCoef(char [], double inc_angle_degree);
@@ -67,7 +72,6 @@ struct
 } GMF;
 
 // Geometry (geom.c)
-
 // global structure for holding Rx\Tx\Sx geometry
 typedef struct {
 
@@ -141,6 +145,7 @@ orbitGeometryStruct *geom_getOrbitData(geometryData *gd, int geomIdx );
 void getECEF2SpecularFrameXfrm( double rx_pos_ecef[3], double tx_pos_ecef[3], double sx_pos_ecef[3], double xfrmMatrix[9]);
 void getECEF2OrbitFrameXfrm( double sat_pos_ecef[3], double sat_vel_ecef[3], double xfrmMatrix[9] ); // by Feixiong
 void getOrbit2BodyFrameXfrm (double pitch, double roll, double yaw, double xfrmMatrix[9]); // by Feixiong
+
 //******************************************************************************/
 // specular.c
 
@@ -151,7 +156,8 @@ void solveSpecularPt(double rx_pos_ecef[3], double tx_pos_ecef[3], double sx_pos
                      double rx_vel_ecef[3], double tx_vel_ecef[3], double sx_vel_ecef[3], double *sx_valid, double r_init_m );
 
 //******************************************************************************/
-//coord.c
+// coord.c
+
 void cart2sph( double x[3], double y[3] );
 void wgslla2xyz(double x_llh[3], double x_ecef[3]);
 void wgsxyz2enu(double p_e[3] ,double x_llh[3], double x_enu[3]);
@@ -277,6 +283,7 @@ double getRainAtten_abs( double theta1_rad, double theta2_rad, double h_km, doub
 void surface_saveWindToFile(void);
 void surface_saveDopplerToFile(void);
 void surface_saveDelayToFile(void);
+
 //******************************************************************************/
 // grid.c
 
@@ -442,7 +449,7 @@ void matrix_invert_3x3(double A[9], double invA[9]);
 #define fatalError(...) { char str[1000]; sprintf(str, __VA_ARGS__); printf( "%s (%s in %s, line %d)\n", str, __func__, __FILE__, __LINE__); exit(EXIT_FAILURE); }
 
 //******************************************************************************/
-//debug.c
+// debug.c
 void printfGeometry(geometryData orbitGeometry);
 void printGMF();
 

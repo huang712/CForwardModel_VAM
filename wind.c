@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 //
-// Code for loading the wind field data and converting to mss.  Surface.c has
-// code which requests the wind field at different locations.
+// Code for loading the wind field data and converting to mss.
+// Surface.c has code which requests the wind field at different locations.
 //
 //****************************************************************************/
 
@@ -11,7 +11,7 @@
 
 void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField iwf, double grid_resolution){
 
-    //interpolate from iwf.data[] to wf.data[]
+    // interpolate from iwf.data[] to wf.data[]
     printf("Interpolate wind field into surface frame\n");
 
     double r_sp; //earth radius at specular point
@@ -41,12 +41,12 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
     PUTz = (double *)calloc(numPts,sizeof(double));
 
 
-    //First rorate along X for theta, then along Y for phi
-    //important! order of index, reference in the thesis
+    // First rorate along X for theta, then along Y for phi
+    // important! order of index, reference in the thesis
     for (int i = 0; i < numX; i++){
         for(int j = 0;j < numY;j++){
-            theta= (numX/2-i) * dtheta; // along X
-            phi= (numY/2-j) * dphi; // along Y
+            theta= (numX/2-i) * dtheta;  // along X
+            phi= (numY/2-j) * dphi;  // along Y
             //phi = (numY/2-i) * dphi; // along X
             //theta= (numX/2-j) * dtheta; // along Y
             ind = SURFINDEX(i, j);
@@ -86,7 +86,6 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
         PUT_LON[i] = pos_lla[1];
         if (PUT_LON[i] < 0) PUT_LON[i]=PUT_LON[i]+360; //convert from -180 -180 to 0-360
         PUT_H[i] = pos_lla[2];
-
     }
 
     int savePUT;
@@ -100,7 +99,7 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
         fclose(outp);
     }
 
-    //Interpolate iwf.data[] to wf.data[]
+    // Interpolate iwf.data[] to wf.data[]
     int *positions;
     positions = (int *)calloc(numPts,sizeof(int));
 
@@ -108,7 +107,7 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
     lon_vec = (double *)calloc(iwf.numPtsLon,sizeof(double));
     lat_vec = (double *)calloc(iwf.numPtsLat,sizeof(double));
 
-    //PUT_LON is in -180 to 180; iwf.lon_min_deg is in 0-360
+    // PUT_LON is in -180 to 180; iwf.lon_min_deg is in 0-360
 
     for (int i = 0; i < iwf.numPtsLon; i++){
             lon_vec[i] = iwf.lon_min_deg + i*iwf.resolution_lon_deg;
@@ -117,7 +116,7 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
         lat_vec[i] = iwf.lat_min_deg + i*iwf.resolution_lat_deg;
     }
 
-    //bilinear interpolation
+    // Bilinear interpolation
     int bi_index[4];
     double bi_weight[4];
     for (int i = 0; i<numPts; i++){
@@ -138,7 +137,7 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
                                     +bi_weight[2]*iwf.data[bi_index[2]].rainRate_mmhr
                                     +bi_weight[3]*iwf.data[bi_index[3]].rainRate_mmhr;
         for (int j = 0 ; j<4; j++){
-            bi_index0[i][j]=bi_index[j]; //store into global variable
+            bi_index0[i][j]=bi_index[j]; // store into global variable
             bi_weight0[i][j]=bi_weight[j];
         }
     }
@@ -164,32 +163,35 @@ void wind_interpolate(windField *wf,struct Geometry geom, struct inputWindField 
 
     double mss[5];
     double mag_abs, dir_rad;
-    for(int i = 0; i < numPts; i++){   //1:8100
-        wind_convertWindXY2MagDir( wf->data[i].windSpeed_U10_ms, wf->data[i].windSpeed_V10_ms, &mag_abs, &dir_rad);  //from U10, V10 to wind magnitude and direction
+    for(int i = 0; i < numPts; i++){   // 1:14400
+        // from U10, V10 to wind magnitude and direction
+        wind_convertWindXY2MagDir( wf->data[i].windSpeed_U10_ms, wf->data[i].windSpeed_V10_ms, &mag_abs, &dir_rad);
         wf->data[i].windSpeed_ms = mag_abs;
         wf->data[i].windDir_rad  = dir_rad;
-        wind_converWindToMSS( wf->data[i].windSpeed_ms, wf->data[i].windDir_rad * R2D, mss );   //from wind speed to surface slope variances and correlation Katzberg Model
-        wf->data[i].mss_perp     = mss[0];
-        wf->data[i].mss_para     = mss[1];
-        wf->data[i].mss_x        = mss[2];
-        wf->data[i].mss_y        = mss[3];
-        wf->data[i].mss_b        = mss[4];
+
+        // From wind speed to MSS by Katzberg Model
+        if (GMF_OnOff==0){
+            wind_converWindToMSS( wf->data[i].windSpeed_ms, wf->data[i].windDir_rad * R2D, mss );
+            wf->data[i].mss_perp     = mss[0];
+            wf->data[i].mss_para     = mss[1];
+            wf->data[i].mss_x        = mss[2];
+            wf->data[i].mss_y        = mss[3];
+            wf->data[i].mss_b        = mss[4];
+        }
     }
-
-
 }
 
 void wind_initialize(windField *wf, struct metadata meta, struct Geometry geom, struct inputWindField iwf){
-    wf->numGridPtsX   = meta.numGridPoints[0];	//120
-    wf->numGridPtsY   = meta.numGridPoints[1];   //120
-    wf->resolutionX_m = meta.grid_resolution_m; //1000
+    wf->numGridPtsX   = meta.numGridPoints[0];	// 120
+    wf->numGridPtsY   = meta.numGridPoints[1];   // 120
+    wf->resolutionX_m = meta.grid_resolution_m; // 1000
     wf->resolutionY_m = meta.grid_resolution_m;
     wf->numGridPts    = wf->numGridPtsX * wf->numGridPtsY;
 
-    int N = wf->numGridPts; //14400
-    wf->data = (windFieldPixel *)calloc(N, sizeof(windFieldPixel)); //initiallize this array with length of N
+    int N = wf->numGridPts; // 14400
+    wf->data = (windFieldPixel *)calloc(N, sizeof(windFieldPixel));  // initiallize this array with length of N
 
-    //initialize the index
+    // initialize the index
     for(int i = 0; i < wf->numGridPtsX; i++){
         for(int j = 0; j < wf->numGridPtsY; j++) {
             wf->data[SURFINDEX(i, j)].x = i;
@@ -197,32 +199,28 @@ void wind_initialize(windField *wf, struct metadata meta, struct Geometry geom, 
         }
     }
 
-    wf->type = 2;//non-uniform wind
+    wf->type = 2;  // non-uniform wind
 }
 
 void wind_getWindFieldAtXY( windField *wf, double x_m, double y_m, windFieldPixel *value ){  //copy wf to value
     int x_idx, y_idx, idx;
 
-    switch( wf->type ){  //type=2
-        case 1: // uniform wind field
+    switch( wf->type ){  // type = 2
+        case 1:  // uniform wind field
             memcpy( value, &(wf->data[wf->locCurrentPt]), sizeof(windFieldPixel) );
             break;
 
-        case 2: // non-uniform wind field
+        case 2:  // non-uniform wind field
             x_idx = floor(  (x_m - 0) / wf->resolutionX_m );
             y_idx = floor(  (y_m - 0) / wf->resolutionY_m );
-            //printf("XX: %d %d\n", x_idx, y_idx );
-            //idx   = y_idx * wf->numGridPtsX + x_idx;
             idx = x_idx * wf->numGridPtsY + y_idx;
-
-            //printf("idx= %d \n", idx);
 
             if( (idx < 0) || (idx >= wf->numGridPts) ){
                 //printf("Error: windfield out of range\n");
                 //exit(0);
                 idx = 0;
             }
-            memcpy( value, &(wf->data[idx]), sizeof(windFieldPixel) );
+            memcpy(value, &(wf->data[idx]), sizeof(windFieldPixel));
             break;
 
         default:
@@ -235,13 +233,7 @@ void wind_getWindFieldAtXY( windField *wf, double x_m, double y_m, windFieldPixe
 //  Wind Speed to MSS
 /****************************************************************************/
 
-//void wind_converWindToMSS_CYG( double windSpeedMag_ms, double windDirectionAngle_deg, double mss[5] ){
-//    // Modified model from CYGNSS GMF
-//
-//    double f, sigma2_sx0, sigma2_sy0, sigma2_sx, sigma2_sy, sxsy, b_xy, phi0_rad;
-//}
-
-void wind_converWindToMSS( double windSpeedMag_ms, double windDirectionAngle_deg, double mss[5] ) {	//wind to MSS (62)-(67)
+void wind_converWindToMSS( double windSpeedMag_ms, double windDirectionAngle_deg, double mss[5] ) {	// wind to MSS (62)-(67)
     // Katzberg Model
 
     double f, sigma2_sx0, sigma2_sy0, sigma2_sx, sigma2_sy, sxsy, b_xy, phi0_rad;
@@ -263,21 +255,21 @@ void wind_converWindToMSS( double windSpeedMag_ms, double windDirectionAngle_deg
 
     phi0_rad   = windDirectionAngle_deg * D2R; // V10=0, always 90 degree
 
-    sigma2_sx  = sigma2_sx0 * pow(cos(phi0_rad),2) + sigma2_sy0 * pow(sin(phi0_rad),2);  //sy0
-    sigma2_sy  = sigma2_sy0 * pow(cos(phi0_rad),2) + sigma2_sx0 * pow(sin(phi0_rad),2);  //sx0
+    sigma2_sx  = sigma2_sx0 * pow(cos(phi0_rad),2) + sigma2_sy0 * pow(sin(phi0_rad),2);  // sy0
+    sigma2_sy  = sigma2_sy0 * pow(cos(phi0_rad),2) + sigma2_sx0 * pow(sin(phi0_rad),2);  // sx0
     sxsy       = (sigma2_sy0 - sigma2_sx0)*cos(phi0_rad)*sin(phi0_rad);
     b_xy       = sxsy / sqrt( sigma2_sx*sigma2_sy );
 
-    mss[0] = sigma2_sx0; //mss_perp
-    mss[1] = sigma2_sy0; //mss_para
-    mss[2] = sigma2_sx;  //mss_x
-    mss[3] = sigma2_sy;  //mss_y
-    mss[4] = b_xy;       //mss_b
+    mss[0] = sigma2_sx0; // mss_perp
+    mss[1] = sigma2_sy0; // mss_para
+    mss[2] = sigma2_sx;  // mss_x
+    mss[3] = sigma2_sy;  // mss_y
+    mss[4] = b_xy;       // mss_b
 }
 
 void wind_convertWindXY2MagDir( double x, double y, double *mag, double *dir_rad ){
     // wind vector w = [ x y ], y-axis vector y = [ 0 1 ];
-    // evalutates  angle = sign(w(1)) * acos( dot(w,y) / norm(w) )
+    // evalutates angle = sign(w(1)) * acos( dot(w,y) / norm(w) )
     double sign_x = (x > 0) ? 1 : ((x < 0) ? -1 : 0);
     *mag = sqrt(pow(x,2) + pow(y,2));
     *dir_rad = sign_x * acos( y / *mag );

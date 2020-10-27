@@ -11,6 +11,7 @@ double cot(double z){ return 1.0 / tan(z); }
 double sec(double z){ return 1.0 / cos(z); }
 double csc(double z){ return 1.0 / sin(z); }
 
+// Rotation matrices for coordinate transformation
 void RotationMatrix_X (double theta, double xfrmMatrix[9]){
     xfrmMatrix[0]=1; xfrmMatrix[1]=0; xfrmMatrix[2]=0;
     xfrmMatrix[3]=0; xfrmMatrix[4]=cos(theta); xfrmMatrix[5]=sin(theta);
@@ -30,7 +31,10 @@ void RotationMatrix_Z (double theta, double xfrmMatrix[9]){
 }
 
 //-----------------------------------------------------------------------------------
-void bubble(int *a,int n) //array a and length n
+void bubble(int *a,int n)
+// bubble ordering
+// array a and length n
+
 {
     int i,j,temp;
     for(i=0;i<n-1;i++){
@@ -45,13 +49,14 @@ void bubble(int *a,int n) //array a and length n
 }
 
 void bilinear_interp(double *x_vec, double *y_vec, int size_x, int size_y, double x, double y, int *bi_index, double *bi_weight, double resolution){
-    //find indices from bilinear interpolation
-    //resolution = lat/lon resolution
-    //x=lon, y=lat, index= lat * NLON + lon;
+    // Find indices from bilinear interpolation
+    // resolution = lat/lon resolution
+    // x=lon, y=lat, index= lat * NLON + lon;
+
     int ix1,ix2,iy1,iy2;
     double x1,x2,y1,y2;
-    //find ix1 and ix2, the two index that are nearest to x
 
+    // find ix1 and ix2, the two index that are nearest to x
     for (int i=0; i<size_x; i++){
         if (fabs(x_vec[i]-x)<resolution){
             ix1=i; ix2=i+1;
@@ -67,6 +72,7 @@ void bilinear_interp(double *x_vec, double *y_vec, int size_x, int size_y, doubl
             break;
         }
     }
+
     //printf("x1 x2 y1 y2= %f %f %f %f\n",x1,x2,y1,y2);
     bi_index[0] = iy1*size_x+ix1; //index of Q11
     bi_index[1] = iy1*size_x+ix2; //index of Q21
@@ -80,10 +86,9 @@ void bilinear_interp(double *x_vec, double *y_vec, int size_x, int size_y, doubl
 
 }
 
-
-
 int find_nearest(double *vec, int size, double value){  //by Feixiong
-    //find the nearest value in vec[] and return the index
+    // find the nearest value in vec[] and return the index
+
     double diff, temp_diff;
     int index;
 
@@ -101,6 +106,8 @@ int find_nearest(double *vec, int size, double value){  //by Feixiong
 }
 
 double linear_interp( double a, double b, int direction, double time_01 ){
+    // Linear interpolation
+
     if( direction == 0 )
         return (1-time_01) * a + time_01 * b;
     else
@@ -110,6 +117,7 @@ double linear_interp( double a, double b, int direction, double time_01 ){
 void cubic_interpolation( double f0, double f1, double df0, double df1,
                           double t, double *ft, double *dft, double timeInterval_s){
     // t must be between 0 and 1
+
     if( (t < 0) || (t > 1) ){
         printf("Time error in cubic interp!\n");
         exit(0);
@@ -151,6 +159,7 @@ void cubic_interpolation_3vector( double f0[3], double f1[3], double df0[3], dou
 void vector_orthoNorm( double a[3], double b[3] ){
     // take vector b, remove component parallel to a
     // and then normalize length to 1
+
     double s = vector_dot_product(a,b);
     b[0] = b[0] - s*a[0];
     b[1] = b[1] - s*a[1];
@@ -184,6 +193,7 @@ void vector_unit(double *x, double *x_unit) {
     // takes x and produces a unit vector in the
     // same direction (x and x_unit can be the same
     // when calling this function)
+
     double X = vector_norm(x);
     x_unit[0] = x[0] / X;
     x_unit[1] = x[1] / X;

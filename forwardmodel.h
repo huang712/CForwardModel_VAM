@@ -1,5 +1,9 @@
+//---------------------------------------------------------------------------
+//
+// Define structures and functions of forward model
 // Created by Feixiong Huang on 2017/10/19/
-// Updated by Feixiong Huang on 2020/09/20
+//
+//***************************************************************************
 
 #ifndef CFORWARDMODEL_INPUTOUPUT_H
 #define CFORWARDMODEL_INPUTOUPUT_H
@@ -34,27 +38,27 @@ struct windInfo  // information of wind field in the data from the config file
 
 struct metadata
 {
-    //high resolution DDM
+    // high resolution DDM
     int numDelaybins;
     int numDopplerbins;
     double delayRez_chips;
     double dopplerRes_Hz;
 
-    //specularBin
+    // specularBin
     int specular_delayBinIdx;
     int specular_dopplerBinIdx;
 
-    //downsampled DDM
+    // downsampled DDM
     int resample_startBin[2];
     int resample_resolution_bins[2];
     int resample_numBins[2];
 
-    //thermalNoise
+    // thermalNoise
     double temp_K;
     double noiseFigure_dB;
     double excess_noisefloor_dB;
 
-    //surfaceGrid
+    // surfaceGrid
     double grid_resolution_m;
     int numGridPoints[2];
     int surfaceCurvatureType;
@@ -111,9 +115,7 @@ struct Geometry
     double sp_lat, sp_lon;
 };
 
-//output data
-
-
+//**************************** Output Data ****************************
 
 struct DDMfm
 {
@@ -133,16 +135,14 @@ struct DDMPixel
     double Doppler;
 };
 
-
-
 struct Jacobian
 {
     int numDDMbins;
     int numPts_LL;
-    double Pts_lat_vec[200]; //long enough to larger than numPts_LL
+    double Pts_lat_vec[200]; // long enough to larger than numPts_LL
     double Pts_lon_vec[200];
     int Pts_ind_vec[200];
-    struct JacobianPixel *data; //structure in structure
+    struct JacobianPixel *data; // structure in structure
 };
 
 struct JacobianPixel
@@ -151,12 +151,14 @@ struct JacobianPixel
     double lat_deg, lon_deg;
 };
 
+//**************************** Functions ****************************
+
 //forward model.c : Forward model main function
 void forwardModel(struct metadata meta, struct powerParm pp,
                   struct inputWindField iwf, struct Geometry geom,
                   struct DDMfm *ddm_fm, struct Jacobian *jacob, struct option opt);
 
-//initialization.c : initialization functions
+// initialization.c : initialization functions
 void init_metadata(struct CYGNSSL1 l1data, struct metadata *meta);
 void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp);
 void init_inputWindField_data(char dataName[], struct inputWindField *iwf, struct windInfo);
@@ -165,7 +167,7 @@ void init_DDM(struct CYGNSSL1 l1data, struct DDMfm *ddm_fm);
 void init_Jacobian(struct Jacobian *jacob);
 char* getRxAntenna(int sc_num, int ddm_ant);
 
-//saveFile.c : file saving functions (for debug)
+// saveFile.c : file saving functions (for debug)
 void DDMfm_saveToFile(struct DDMfm ddm_fm, int index, int pathType, char saveDir[1000]);
 void Jacobian_saveToFile(struct Jacobian jacob, int index, int pathType, char saveDir[1000]);
 void indexLL_saveToFile(struct Jacobian jacob, char saveDir[1000]);

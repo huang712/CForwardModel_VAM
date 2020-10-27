@@ -1,8 +1,10 @@
+//---------------------------------------------------------------------------
 //
-// Created by Feixiong Huang on 1/22/18.
+// strutures to store CYGNSS L1 data and related functions
+// Created by Feixiong Huang on 1/22/18
 //
+//***************************************************************************
 
-//strutures to store CYGNSS measurement data and related functions
 #ifndef CFORWARDMODEL_CYGNSS_H
 #define CFORWARDMODEL_CYGNSS_H
 
@@ -10,21 +12,19 @@ struct CYGNSSL1
 {
     long int quality_flags;
     double utc_sec;
-    int sc_num;  //1-8
-    int index; //index of measurement of the day
-    int spNum; //1-4 reflection number
-    int prn_code; //GPS PRN 1-32
-    double inc_angle; //specular point incidence angle
-    double fresnel_coeff2; // square of reflectivity
+    int sc_num;  // 1-8 CYGNSS SV number
+    int index;  // sample index
+    int spNum;  // 1-4 reflection channel number
+    int prn_code;  // 1-32 GPS PRN
+    double inc_angle;  // specular point incidence angle
+    double fresnel_coeff2;  // square of reflectivity
     double sp_rx_gain;
 
-    int ddm_ant; // antenna type 2 = starboard, 3 = port
+    int ddm_ant;  // antenna type 2 = starboard, 3 = port
     double ant_temperature_cels;
     double gps_eirp_watt;
     double noise_figure;
 
-    //int ddm_peak_delay_row;
-    //int ddm_peak_dopp_col;
     double ddm_sp_delay_row;
     double ddm_sp_dopp_col;
 

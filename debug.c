@@ -1,8 +1,12 @@
+//---------------------------------------------------------------------------
 //
-// Created by Feixiong Huang on 11/14/17.
+// Functions for debugging
+// Created by Feixiong Huang on 11/14/17
 //
+//***************************************************************************
 
 #include "gnssr.h"
+
 void printGMF(){
     printf("a0 = %f  ",GMF.a0);
     printf("a1 = %f  ",GMF.a1);
@@ -49,7 +53,6 @@ void printfGeometry(geometryData orbitGeometry){
     printf("%f   ",orbitGeometry.g[0].sx_vel_ecef[1]);
     printf("%f   ",orbitGeometry.g[0].sx_vel_ecef[2]);
     printf("\n");
-    //printf("\n");
 }
 
 /*

@@ -1,3 +1,9 @@
+//---------------------------------------------------------------------------
+//
+// Initilize forward model structures using CYGNSSL1 structure
+// Created by Feixiong Huang on 1/22/18
+//
+//***************************************************************************
 
 #include <stdio.h>
 #include <netcdf.h>
@@ -8,17 +14,20 @@
 #define ERR(e) {printf("Error: %s\n", nc_strerror(e));}
 
 void init_metadata(struct CYGNSSL1 l1data, struct metadata *meta) {
-    //read from CYGNSS data
+    // Read from CYGNSS data
+
     meta->meas_ddm_sp_index[0] = l1data.ddm_sp_delay_row;
     meta->meas_ddm_sp_index[1] = l1data.ddm_sp_dopp_col;
 
-    //default numbers
-    meta->numDelaybins = 100*fastMode_OnOff+400*(!fastMode_OnOff);    //100  400
-    meta->numDopplerbins = 200*fastMode_OnOff+400*(!fastMode_OnOff);;  //200 400
+    // Default numbers
+    // by default, numDelaybins = 400, numDopplerbins = 400, resample_startBin[1] = 100
+    // In fast mode, numDelaybins = 100, numDopplerbins = 200, resample_startBin[1] = 0
+    meta->numDelaybins = 100*fastMode_OnOff+400*(!fastMode_OnOff);    // 100  400
+    meta->numDopplerbins = 200*fastMode_OnOff+400*(!fastMode_OnOff);;  // 200 400
     meta->delayRez_chips = 0.0510345;
-    meta->dopplerRes_Hz = 25;  //25
+    meta->dopplerRes_Hz = 25;
     meta->resample_startBin[0] = 0;
-    meta->resample_startBin[1] = 0*fastMode_OnOff+100*(!fastMode_OnOff);; //0 100
+    meta->resample_startBin[1] = 0*fastMode_OnOff+100*(!fastMode_OnOff);; // 0 100
     meta->resample_resolution_bins[0] = 5;
     meta->resample_resolution_bins[1] = 20;
     meta->resample_numBins[0] = 17;
@@ -32,11 +41,11 @@ void init_metadata(struct CYGNSSL1 l1data, struct metadata *meta) {
 
     meta->grid_resolution_m = 1000;
 
-    // this must be 120 x 120 km for incidence angle = 60 deg.
+    // This must be 120 x 120 km for incidence angle = 60 deg.
     // If change this, then also need to change bi_index0 and bi_weight0 in gnssr.h
-    meta->numGridPoints[0] = 120; // grid points in X direction
-    meta->numGridPoints[1] = 120; // grid points in Y direction, X,Y direction are defined in the EKF paper
-    meta->surfaceCurvatureType = 1;//1 = spherical, 2 = flat
+    meta->numGridPoints[0] = 120;  // grid points in X direction
+    meta->numGridPoints[1] = 120;  // grid points in Y direction, X,Y direction are defined in the EKF paper
+    meta->surfaceCurvatureType = 1;  // 1 = spherical, 2 = flat
 
     meta->prn_code = l1data.prn_code;
     meta->utc_sec = l1data.utc_sec;
@@ -50,7 +59,7 @@ void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp){
     pp->Tx_eirp_watt = l1data.gps_eirp_watt;
     pp->AtmosphericLoss_dB = 0.0;
 
-    //use lidata.sc_num to select antenna patterns
+    // Use lidata.sc_num to select antenna patterns
     FILE *file;
     char *Rx_filename = getRxAntenna(l1data.sc_num, l1data.ddm_ant);
     //printf("%s\n",Rx_filename);
@@ -72,17 +81,16 @@ void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp){
     pp->Rx_numAz = (int) floor(b);
     pp->Rx_numData = pp->Rx_numEl * pp->Rx_numAz;
 
-    //allocate memory
+    // Allocate memory
     pp->data = (struct Rx_antennaDataPixel *)calloc(pp->Rx_numData,sizeof(struct Rx_antennaDataPixel));
     if(pp->data == NULL){
         printf("Error: Not enough memory to load antenna data\n");
         exit(1);
     }
 
-    double start1, end1;
-    //read from data file into memory
+    // Read from data file into memory
     int N = pp->Rx_numData;
-    int M = 3; //num fields
+    int M = 3;  // num fields
     double *tempBuffer = (double *)calloc(N*M, sizeof(double));
     int numBytesReadFromFile = (int)fread(tempBuffer,sizeof(double),N*M,file);
     if (numBytesReadFromFile != (M*N)) {
@@ -99,9 +107,9 @@ void init_powerParm(struct CYGNSSL1 l1data, struct powerParm *pp){
 
 }
 void init_inputWindField_data(char dataFileName[], struct inputWindField *iwf, struct windInfo info){
-    //read wind field from a data file
-    //lon: 0-360
-    //they are hard coded now
+    // Read wind field from a data file
+    // Lon: 0-360
+
     printf("read wind from data\n");
     iwf->numPtsLon=info.numPtsLon;
     iwf->numPtsLat=info.numPtsLat;
@@ -121,7 +129,7 @@ void init_inputWindField_data(char dataFileName[], struct inputWindField *iwf, s
     }
 
     double *windData = (double *)calloc(iwf->numPts*2, sizeof(double));
-    int numBytesReadFromFile = (int)fread(windData, sizeof(double),iwf->numPts*2,file);
+    int numBytesReadFromFile = (int)fread(windData, sizeof(double),iwf->numPts*2,file);  // read data
     int ind;
     for(int lon = 0; lon < iwf->numPtsLon; lon++){
         for(int lat = 0;lat < iwf->numPtsLat; lat++){
@@ -154,6 +162,7 @@ void init_Geometry(struct CYGNSSL1 l1data, struct Geometry *geom){
 }
 
 void init_DDM(struct CYGNSSL1 l1data, struct DDMfm *ddm_fm){
+
     ddm_fm->numDelaybins = 17;
     ddm_fm->numDopplerbins = 11;
     ddm_fm->delay_min_chip = l1data.ddm_sp_delay_row * (-0.25);
@@ -176,8 +185,9 @@ void init_DDM(struct CYGNSSL1 l1data, struct DDMfm *ddm_fm){
 }
 
 void init_Jacobian(struct Jacobian *jacob){
+
     jacob->numDDMbins = 187;
-    jacob->numPts_LL = 200; //make it larger
+    jacob->numPts_LL = 200;  // make it larger
 
     int numBin = jacob->numDDMbins * jacob->numPts_LL;
     jacob->data = (struct JacobianPixel *)calloc(numBin,sizeof(struct JacobianPixel));
@@ -195,8 +205,9 @@ void init_Jacobian(struct Jacobian *jacob){
 }
 
 char* getRxAntenna(int sc_num, int ddm_ant){
-    // use static to retrun string
-    // static variable can only be used in this function but the address/memory/value will be kept globally
+    // Use static to retrun string
+    // Static variable can only be used in this function but the address/memory/value will be kept globally
+
     static char filename[100] = ANTENNA_PATH;
     char str1[2];
     sprintf(str1, "%d", sc_num);

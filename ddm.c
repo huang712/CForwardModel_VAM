@@ -12,28 +12,24 @@
 #include "gnssr.h"
 #include "forwardmodel.h"
 
-//prototypes only used within wind.c
-//int find_nearest(double *vec, int size, double value);
-
 void ddm_initialize(struct metadata meta) {
+    // Initialization of DDM:  Read in DDM params from the metadata structure
+    // Alloc and initialize DDM buffers
 
-    //  Initialization of DDM:  Read in DDM params from config file and alloc
-    //  and initialize DDM buffers
-
-    // reads DDM parameters from the configuration file into global struct
-    ddm.numDelayBins         = meta.numDelaybins;   //400
-    ddm.numDoppBins          = meta.numDopplerbins; //400
-    ddm.delayOffset_bins     = meta.specular_delayBinIdx; //6.18 * 5
-    ddm.dopplerOffset_bins   = meta.specular_dopplerBinIdx; //5.02 * 20
+    // Reads DDM parameters from the metadata into global struct
+    ddm.numDelayBins         = meta.numDelaybins;  //400
+    ddm.numDoppBins          = meta.numDopplerbins;  //400
+    ddm.delayOffset_bins     = meta.specular_delayBinIdx;  //6.18 * 5
+    ddm.dopplerOffset_bins   = meta.specular_dopplerBinIdx;  //5.02 * 20
     ddm.dopplerRes_Hz        = meta.dopplerRes_Hz;
     ddm.delayRes_chips       = meta.delayRez_chips;
     ddm.cohIntegrationTime_s = 0.001;
 
-    ddm.numBins              = ddm.numDelayBins * ddm.numDoppBins;//160000
+    ddm.numBins              = ddm.numDelayBins * ddm.numDoppBins;  //160000
     ddm.chipsPerSec          = 1.023e6;
-    ddm.refPower_dB          = -200; // when plotting log, this is what is used for log10(0)
+    ddm.refPower_dB          = -200;  // when plotting log, this is what is used for log10(0)
 
-    // allocate & init DDM buffers
+    // Allocate & init DDM buffers
     _ddm_alloc(&DDM,      ddm.numBins);
     _ddm_alloc(&H,        ddm.numBins);
     _ddm_alloc(&DDM_temp, ddm.numBins);
@@ -52,25 +48,24 @@ void ddm_initialize(struct metadata meta) {
     _ddm_zero( DDM_amb2, ddm.numBins );
     _ddm_zero( DDM_store,ddm.numBins );
 
-    // optimize FFT based on requested DDM size
+    // Optimize FFT based on requested DDM size
     ddm.FFTWPLAN  = fftw_plan_dft_2d(ddm.numDoppBins, ddm.numDelayBins, (fftw_complex*) DDM, (fftw_complex*) DDM, FFTW_FORWARD, FFTW_MEASURE);
     ddm.IFFTWPLAN = fftw_plan_dft_2d(ddm.numDoppBins, ddm.numDelayBins, (fftw_complex*) DDM, (fftw_complex*) DDM, FFTW_BACKWARD, FFTW_MEASURE);
     h.FFTWPLAN  = fftw_plan_dft_2d(ddm.numDoppBins, ddm.numDelayBins, (fftw_complex*) H, (fftw_complex*) H, FFTW_FORWARD, FFTW_MEASURE);
     h.IFFTWPLAN = fftw_plan_dft_2d(ddm.numDoppBins, ddm.numDelayBins, (fftw_complex*) H, (fftw_complex*) H, FFTW_BACKWARD, FFTW_MEASURE);
 
-
-    // precalculate and store the ambiguity function
+    // Precalculate and store the ambiguity function
     ddm_initACF();
     ddm_initAmbFuncBuffers(meta.prn_code);
 
-    // calculate the thermal noise power
+    // Calculate the thermal noise power
     ddm_initThermalNoise(meta);
 
 }
 
 void ddm_cleanup(void){
+    // Free DDM buffers
 
-    // free DDM buffers
     _ddm_free(DDM);
     _ddm_free(DDM_temp);
     _ddm_free(DDM_avg);
@@ -88,8 +83,9 @@ void ddm_cleanup(void){
 /****************************************************************************/
 
 void ddm_binSurface(void) {
-    // loop over surface and use the delay and Doppler value to determine what
+    // Loop over surface and use the delay and Doppler value to determine what
     // DDM bin that surface patch maps to
+
     int delayBin,dopplerBin;
     for(int i=0; i<surface.numGridPts; i++) {
         delayBin   = (int)(round(surface.data[i].delay_s * ddm.chipsPerSec / ddm.delayRes_chips)) + ddm.delayOffset_bins;
@@ -119,11 +115,11 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
     _ddm_zero( H, width );
 
     int i, j, surface_index;
-    int numBins = numDelayBins * numDoppelrBins; //187
-    int numSurfacePt1 = meta.numGridPoints[0] * meta.numGridPoints[1]; //14400  num point in 1 km resolution
-    int numSurfacePt10 = (int)(numSurfacePt1/100); //144  num point in 10 km resolution
+    int numBins = numDelayBins * numDoppelrBins;  //187
+    int numSurfacePt1 = meta.numGridPoints[0] * meta.numGridPoints[1];  //14400  num point in 1 km resolution
+    int numSurfacePt10 = (int)(numSurfacePt1/100);  //144  num point in 10 km resolution
 
-    //H0: 2D array numBins * numSurfacePt 187x144
+    // H0: 2D array numBins * numSurfacePt 187x144
     double **H0 = (double **)calloc(numBins, sizeof(double *));
     for (i = 0; i < numBins; i++){//
         H0[i] = (double *)calloc(numSurfacePt10,sizeof(double));
@@ -132,8 +128,8 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
     double *H0_lat_vec = (double *)calloc(numSurfacePt10, sizeof(double)); //144
     double *H0_lon_vec = (double *)calloc(numSurfacePt10, sizeof(double)); //144
 
-    int i0=0; //index of ddmbin
-    int j0=0; //index of surfacePts
+    int i0=0;  // index of ddmbin
+    int j0=0;  // index of surfacePts
     for(int m = 0 ; m < surface.numGridPtsX/10 ; m = m + 1)
     {
         for(int n = 0 ; n < surface.numGridPtsY/10 ; n = n + 1)
@@ -143,7 +139,8 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
             H0_lon_vec[j0] = surface.data[surface_index].pos_llh[1];
 
             //printf("bin_index = %d\n",surface.data[surface_index].bin_index);
-            if (surface.data[surface_index].bin_index < 0){ //if bin_index=-1, the surface point is outside the glistening zone, dHdm=0
+            // If bin_index = -1, the surface point is outside the glistening zone, dHdm=0
+            if (surface.data[surface_index].bin_index < 0){
                 for (i0=0;i0<numBins;i0++){
                     H0[i0][j0]=0;
                 }
@@ -154,11 +151,11 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
                 ddm_convolveH_FFT(2); //convolve H with ambiguity function, save into H
 
                 i0=0;
+
                 // Resample: from high resolution DDM to 17x11 DDM
                 for (int k=startDoppelr_bin; k < (numDoppelrBins*resDoppelr_bins + startDoppelr_bin); k+=resDoppelr_bins) {
                     for (int l=startDelay_bin; l < (numDelayBins*resDelay_bins + startDelay_bin); l+=resDelay_bins) {
-                        H0[i0][j0] = creal(H[DDMINDEX(k,l)]) * 100;
-                        //jacob->data[i].value = creal(H[DDMINDEX(k,l)]) * 100;//H is derivative respect to pixel in 10km resolution
+                        H0[i0][j0] = creal(H[DDMINDEX(k,l)]) * 100;  // H is derivative respect to pixel in 10km resolution
                         i0 = i0+1;
                     }
                 }
@@ -169,10 +166,10 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
     }
 
     //************** Compute H matrix for points on lat/lon ******************
-    //x'=Mx  M[14400][K]
-    //X=Tx   T[144][K]
-    //First create M[14400][K] matrix from bi_index0[14400][4] and bi_weight0[14400][4]
+    // x' = Mx  M[14400][K]
+    // X = Tx   T[144][K]
 
+    // First create M[14400][K] matrix from bi_index0[14400][4] and bi_weight0[14400][4]
     int *bi_index1 = (int *)calloc(numSurfacePt1*4,sizeof(int));  //reshape bi_index to a 1D array
     for (i = 0; i< numSurfacePt1; i++){
         for (j=0;j<4;j++){
@@ -180,15 +177,16 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
         }
     }
 
-    //throw repeated index in bi_index1
+    // Throw repeated index in bi_index1
     int *a = (int *)calloc(iwf.numPts,sizeof(int)); //array to store occurence times of each index;
     memset(a,0,sizeof(*a));
-    //int a[2000]={0};  //array to store occurence times of each index; length must be larger than all bi_index1[
+    // int a[2000]={0};  //array to store occurence times of each index; length must be larger than all bi_index1[
+
     for (i=0;i<numSurfacePt1*4;i++){
         a[bi_index1[i]]=a[bi_index1[i]]+1;
     }
 
-    //find the lenth numPt_LL and store index into the indexLL
+    // Find the lenth numPt_LL and store index into the indexLL
     int numPt_LL = 0;
     for (i=0;i<iwf.numPts;i++){
         if(a[i]>0) numPt_LL++;
@@ -211,14 +209,14 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
 //        fclose(outp);
 //    }
 
-    //construct M matrix M: 14400 x K
-    double **M; // T[14400][K] interpolation transformation matrix: fill it with bi_weight[14400][4]
+    // Construct M matrix M: 14400 x K
+    double **M;  // M[14400][K] interpolation transformation matrix: fill it with bi_weight[14400][4]
     M = (double**)calloc(numSurfacePt1, sizeof(double*));
     for (i = 0; i < numSurfacePt1; i++){
         M[i] = (double*)calloc(numPt_LL,sizeof(double));
     }
 
-    //initialize M
+    // Initialize M
     for (i = 0; i<numSurfacePt1; i++){
         for(j = 0; j<numPt_LL; j++){
             M[i][j]=0;
@@ -226,7 +224,7 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
     }
 
     int k;
-    //fill M matrix
+    // Fill M matrix
     for (i = 0; i<numSurfacePt1; i++){
         for (j = 0; j<numPt_LL; j++){
             for (k=0; k<4; k++){
@@ -239,8 +237,8 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
     }
 
     int saveM;
-    saveM=0;
-    if(saveM==1){
+    saveM = 0;
+    if(saveM == 1){
         FILE *outp = fopen("M.dat", "wb");
         for (j = 0;j< numPt_LL;j++) {
             for (i = 0; i < 14400; i++){
@@ -250,21 +248,21 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
         fclose(outp);
     }
 
-    double **T; // T[144][K]
+    double **T;  // T[144][K]
     T = (double**)calloc(numSurfacePt10,sizeof(double*));
     for (i = 0; i < numSurfacePt10; i++){
         T[i] = (double*)calloc(numPt_LL,sizeof(double));
     }
 
-    //initialize T
+    // Initialize T
     for (i = 0; i<numSurfacePt10; i++){
         for(j = 0; j<numPt_LL; j++){
             T[i][j]=0;
         }
     }
 
-    //from M to T : 14400 to 144  average
-    //M[14400][numPt_LL]  T[144][numPt_LL]
+    // From M to T : 14400 to 144  average
+    // M[14400][numPt_LL]  T[144][numPt_LL]
     int index;
     i=0;
     for (int m = 0 ; m < surface.numGridPtsX/10 ; m = m + 1) {
@@ -275,7 +273,7 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
                     index = (10*m+i1)*surface.numGridPtsY +10*n+j1;
                     for (int k=0;k<numPt_LL;k++){
                         T[i][k]+=M[index][k];
-                        if(i1==9&&j1==9) {T[i][k]=T[i][k]/100;}
+                        if(i1==9 && j1==9) {T[i][k]=T[i][k]/100;}
                     }
                 }
             }
@@ -287,7 +285,6 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
     //printf("%f %f %f %f\n", bi_weight[0][0],bi_weight[0][1],bi_weight[0][2],bi_weight[0][3]);
     //printf("%d %d %d %d\n", indexLL[0],indexLL[1],indexLL[2],indexLL[3]);
     //printf("%f %f %f %f\n", T[0][0],T[0][1],T[0][2],T[0][3]);
-
 
     int saveH0,saveT;
     saveH0 = 0;
@@ -312,8 +309,8 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
         fclose(outp1);
     }
 
-    //matrix multiplication H[187][110] = H0[187][144] * T[144][110]
-    double **H_LL; //H matrix respect to lat/lon 187x110
+    // Matrix multiplication H[187][110] = H0[187][144] * T[144][110]
+    double **H_LL;  // H matrix respect to lat/lon 187x110
     H_LL = (double**)calloc(numBins,sizeof(double*));//
     for (i = 0; i < numBins; i++){//
         H_LL[i] = (double*)calloc(numPt_LL,sizeof(double));
@@ -327,7 +324,7 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
         }
     }
 
-    //save H_LL to jabob.data[187x144]
+    // Save H_LL to jabob.data[187x144]
     for (i = 0; i < numBins; i++){
         for (j = 0; j<numPt_LL; j++){
             jacob->data[j*numBins+i].value = H_LL[i][j];
@@ -338,14 +335,14 @@ void ddm_Hmatrix(struct metadata meta, struct inputWindField iwf, struct Jacobia
     jacob->numDDMbins = numBins;
     jacob->numPts_LL = numPt_LL;
 
-    //save indexLL into jacob
+    // Save indexLL into jacob
     for(i = 0; i< numPt_LL; i++){
         jacob->Pts_lat_vec[i] = iwf.data[indexLL[i]].lat_deg;
         jacob->Pts_lon_vec[i] = iwf.data[indexLL[i]].lon_deg;
         jacob->Pts_ind_vec[i] = indexLL[i];
     }
 
-    //free menmory
+    // Free menmory
     for (i = 0; i < numBins; i++){
         free(H0[i]);
     }
@@ -387,8 +384,8 @@ void ddm_mapSurfaceToDDM(void) {
 /****************************************************************************/
 
 void ddm_convolveFFT(int ambFuncType){   //type=2
-    // convolves the working DDM with the ambiguity function.  Different
-    // versions of the amb func are used for different purposes
+    // Convolves the working DDM with the ambiguity function.
+    // Different versions of the amb func are used for different purposes
     ddm_fft();
     switch (ambFuncType) {
         case 0:  for(int i = 0; i<ddm.numBins; i++) { DDM[i] = DDM_amb[i]  * DDM[i]; } break; //FFT DDM_amb version
@@ -400,8 +397,8 @@ void ddm_convolveFFT(int ambFuncType){   //type=2
 }
 
 void ddm_convolveH_FFT(int ambFuncType){
-    // convolves the working DDM with the ambiguity function.  Different
-    // versions of the amb func are used for different purposes
+    // Convolves the working Jacobian DDM with the ambiguity function.
+    // Different versions of the amb func are used for different purposes
     ddm_h_fft();
     switch (ambFuncType) {
         case 0:  for(int i = 0; i<ddm.numBins; i++) { H[i] = DDM_amb[i]  * H[i]; } break;
@@ -411,7 +408,6 @@ void ddm_convolveH_FFT(int ambFuncType){
     }
     ddm_h_ifft();
 }
-
 
 void ddm_fft(void){  fftw_execute(ddm.FFTWPLAN); }
 void ddm_ifft(void){ fftw_execute(ddm.IFFTWPLAN); ddm_scale( (1.0/ddm.numBins)); }
@@ -435,13 +431,14 @@ void circshift(DDMtype *out, const DDMtype *in, int xdim, int ydim, int xshift, 
 }
 
 /****************************************************************************/
-//  Ambiguity Function (analytic, unfiltered)
-//  based on eqns (20) and (21) [Zavorotny & Voronovich 2000]
+// Ambiguity Function (analytic, unfiltered)
+// based on eqns (20) and (21) [Zavorotny & Voronovich 2000]
 /****************************************************************************/
 
 void ddm_initACF(void){
-    //added by Feixiong
-    // load PRN ACF matrix
+    // Added by Feixiong
+    // Load PRN ACF matrix
+
     FILE *file;
     char *ACF_filename = PRN_ACF_FILE;
     file = fopen(ACF_filename,"rb");
@@ -454,67 +451,69 @@ void ddm_initACF(void){
 }
 
 void ddm_initAmbFuncBuffers(int prn_code) {
-    // called from ddm_initialize
+    // Called from ddm_initialize
+    // Generate amb func and align it to first bin, store a copy in temp buffer
 
-    // generate amb func and align it to first bin, store a copy in temp buffer
-    ddm_genAmbFunc(prn_code);  //computer ambiguity function values for each delay/Doppler bin and store in DDM[]
-    ddm_fftshift();   //circular shift DDM[] in delay and Doppler dimension (why?)
+    ddm_genAmbFunc(prn_code);  // computer ambiguity function values for each delay/Doppler bin and store in DDM[]
+    ddm_fftshift();  // circular shift DDM[] in delay and Doppler dimension (why?)
     for(int i = 0; i<ddm.numBins; i++) {  DDM_temp[i] = DDM[i]; }
 
-    // save FFT'd version in DDM_amb buffer
+    // Save FFT'd version in DDM_amb buffer
     ddm_fft();
     for(int i = 0; i<ddm.numBins; i++) {  DDM_amb[i] = DDM[i]; }
 
-    // save a normalized, FFT'd version in DDM_amb1 buffer
+    // Save a normalized, FFT'd version in DDM_amb1 buffer
     for(int i = 0; i<ddm.numBins; i++) {  DDM_amb1[i] = sqrt(cabs(DDM_amb[i])); }
 
-    // take mag squared, FFT it, and save it in DDM_amb2 buffer
+    // Take mag squared, FFT it, and save it in DDM_amb2 buffer
     for(int i = 0; i<ddm.numBins; i++) {  DDM[i] = DDM_temp[i]; }
     ddm_magSqr();
     ddm_fft(); // why?
-    for(int i = 0; i<ddm.numBins; i++) {  DDM_amb2[i] = DDM[i]; }  //use this one
+    for(int i = 0; i<ddm.numBins; i++) {  DDM_amb2[i] = DDM[i]; }  // use this one
 
-    // reset DDM buffer to zero when we are done
+    // Reset DDM buffer to zero when we are done
     _ddm_zero( DDM, ddm.numBins );
 }
 
 void ddm_genAmbFunc(int prn_code){
-    // generate (non-squared) amb func. centered in DDM buffer
+    // Generate (non-squared) amb func. centered in DDM buffer
+
     double dtau_s, dfreq_Hz;
-
     double cohIntTime_s  = ddm.cohIntegrationTime_s;  // 0.001
-    double tauChip_s     = 1 / ddm.chipsPerSec; // 1/1.023e6
-    int centerDelayBin   = (int) floor(ddm.numDelayBins/2); //200
-    int centerDopplerBin = (int) floor(ddm.numDoppBins/2);  //200
+    double tauChip_s     = 1 / ddm.chipsPerSec;  // 1/1.023e6
+    int centerDelayBin   = (int) floor(ddm.numDelayBins/2);  // 200
+    int centerDopplerBin = (int) floor(ddm.numDoppBins/2);  // 200
 
-    for (int l=0; l < ddm.numDelayBins; l++) {  //l=0:399
-        dtau_s =  (l - centerDelayBin) * ddm.delayRes_chips * tauChip_s; //(l-200)*0.05*tauChip_s
+    for (int l=0; l < ddm.numDelayBins; l++) {  // l=0:399
+        dtau_s =  (l - centerDelayBin) * ddm.delayRes_chips * tauChip_s;  // (l-200)*0.05*tauChip_s
         for (int k=0; k < ddm.numDoppBins; k++) {
             dfreq_Hz = (k - centerDopplerBin) * ddm.dopplerRes_Hz;
-            //DDM[DDMINDEX(k,l)] = lambda(dtau_s,tauChip_s,cohIntTime_s) * S(dfreq_Hz,cohIntTime_s);
+            // DDM[DDMINDEX(k,l)] = lambda(dtau_s,tauChip_s,cohIntTime_s) * S(dfreq_Hz,cohIntTime_s);
             DDM[DDMINDEX(k,l)] = lambda_prn(prn_code, dtau_s,tauChip_s,cohIntTime_s) * S(dfreq_Hz,cohIntTime_s);
         }
     }
 }
 
 double lambda( double dtau_s, double tauChip_s, double cohIntTime_s ) {
-    //perfect trianglular on ZV paper
+    // Perfect trianglular function on ZV paper
+
     return (fabs(dtau_s) <= (tauChip_s*(1+tauChip_s/cohIntTime_s))) ?
            (1 - fabs(dtau_s)/tauChip_s) : -tauChip_s/cohIntTime_s;
 }
 
 double lambda_prn(int prn_code, double dtau_s, double tauChip_s, double cohIntTime_s ){
-    //ACF for each PRN
+    // ACF for each PRN
+
     double bin;
     int bin0, bin1;
     double ACF, ACF0, ACF1;
 
-    bin = dtau_s/tauChip_s; //-10chips to 9.95chips
+    bin = dtau_s/tauChip_s;  // -10chips to 9.95chips
     bin0 = (int)floor(bin);
     bin1 = (int)floor(bin)+1;
     ACF0 = PRN_ACF[1023*(prn_code-1)+511+bin0];
     ACF1 = PRN_ACF[1023*(prn_code-1)+511+bin1];
-    ACF = (bin1-bin)*ACF0+(bin-bin0)*ACF1; //linear interpolation
+    ACF = (bin1-bin)*ACF0+(bin-bin0)*ACF1;  // linear interpolation
 
     return ACF;
     //printf("%f %f %f \n",ACF,ACF0, ACF1);
@@ -522,6 +521,8 @@ double lambda_prn(int prn_code, double dtau_s, double tauChip_s, double cohIntTi
 }
 
 complex double S(double dfreq_Hz, double cohIntTime_s) {
+    // Sinc function
+
     double x       = dfreq_Hz*pi*cohIntTime_s;
     double ang_rad = -1*pi*dfreq_Hz*cohIntTime_s;
     return (x==0) ? 1 : (sin(x)/x) * (cos(ang_rad) + I*sin(ang_rad));
@@ -533,26 +534,26 @@ complex double S(double dfreq_Hz, double cohIntTime_s) {
 /****************************************************************************/
 
 void ddm_initThermalNoise(struct metadata meta){
-    // called from ddm_initialize
+    // Called from ddm_initialize
 
-    // get thermal noise params from config file
-    double k           = -228.599167840;	// Boltzman, dBW/K/Hz
+    // Get thermal noise params from config file
+    double k           = -228.599167840;  // Boltzman, dBW/K/Hz
     double temp_K      = meta.temp_K;
     double noiseFig_dB = meta.noiseFigure_dB;
     double Ti          = 0.001;
     double BW_Hz       = 1/Ti;
 
-    double noisePower_abs =  pow(10,(k/10)) * temp_K * BW_Hz * pow(10,(noiseFig_dB/10)); //
+    double noisePower_abs =  pow(10,(k/10)) * temp_K * BW_Hz * pow(10,(noiseFig_dB/10));
     double noisePower_dBW = 10*log10(noisePower_abs);
 
-    ddm.thermalNoisePwr_abs = sqrt(noisePower_abs);  //sigma of noise
-    ddm.thermalNoisePwr_abs = ddm.thermalNoisePwr_abs/1000; // because of incoherent summation
+    ddm.thermalNoisePwr_abs = sqrt(noisePower_abs);  // sigma of noise
+    ddm.thermalNoisePwr_abs = ddm.thermalNoisePwr_abs/1000;  // because of incoherent summation
 }
 
 void ddm_addGaussianNoise(void){
     // Add complex, Gaussian noise to DDM (colored with ambiguity function)
-    // Currently, the convolution is done separately from the DDM/speckle convolution
-    // due to the normalization.
+    // Currently, the convolution is done separately from the DDM/speckle convolution due to the normalization.
+
     printf("Add thermal noise\n");
     for(int i = 0; i<ddm.numBins; i++) {  DDM_temp[i] = DDM[i]; DDM[i] = 0;  }
     ddm_addWhiteGaussianNoise(ddm.thermalNoisePwr_abs);
@@ -566,13 +567,14 @@ void ddm_addGaussianNoise(void){
 
 void ddm_addWhiteGaussianNoise(double sigma){
     // Add complex, *white* Gaussian noise to DDM (mean = 0 and variance = sigma^2)
+
     #define RAND_GEN_TYPE 1
     double U1,U2;
     double R,T1,T2;
 
-    #if (RAND_GEN_TYPE == 1) // standard Box-Muller Method
+    #if (RAND_GEN_TYPE == 1)  // standard Box-Muller Method
         for(int i = 0; i<ddm.numBins; i++) {
-            U1 = uniformRandf(); //uniform random number (0,1]
+            U1 = uniformRandf();  //uniform random number (0,1]
             U2 = uniformRandf();
             R  = sigma*sqrt(-2.0*log(U1))*(1/sqrt(2));
             T1 = R*cos(2*pi*U2);
@@ -582,7 +584,7 @@ void ddm_addWhiteGaussianNoise(double sigma){
         }
     #endif
 
-    #if (RAND_GEN_TYPE == 2) // polar form (supposedly faster ...)
+    #if (RAND_GEN_TYPE == 2)  // polar form (supposedly faster ...)
         double S;
         for(int i = 0; i<ddm.numBins; i++) {
             do {
@@ -598,26 +600,28 @@ void ddm_addWhiteGaussianNoise(double sigma){
     #endif
 }
 
-// uniform random number (0,1]. never = 0 so that we can safely take log of it
+// Uniform random number (0,1]. never = 0 so that we can safely take log of it
 double uniformRandf( void ) { return ((double)rand() + 1.0)/((double)RAND_MAX + 1.0); }
 
 void ddm_addRandomPhase(void){
-    // adds a uniform random phase to the DDM
+    // Adds a uniform random phase to the DDM
     // (for testing a poor man's speckle noise)
+
     for(int i = 0; i<ddm.numBins; i++) { DDM[i] *= cexp(I * uniformRandf() * 2 * pi); }
 }
 
 void testNoisePowerLevels(void){
-    // used internally for debugging noise powers
+    // Used internally for debugging noise powers
+
     printf("Noise Power 1 is:  %f (dBW)\n", 20*log10(ddm.thermalNoisePwr_abs) );
 
-    _ddm_zero( DDM,      ddm.numBins );
+    _ddm_zero(DDM,ddm.numBins);
     ddm_addGaussianNoise();
     printf("Noise Power 2 is:  %f (dBW)\n", 20*log10(ddm_getRMS()) );
 
     ddm_resetRunningAvg();
-    for( int i=0; i<100; i++){
-        _ddm_zero( DDM,      ddm.numBins );
+    for(int i=0; i<100; i++){
+        _ddm_zero(DDM,ddm.numBins);
         ddm_addGaussianNoise();
         ddm_magSqr();
         ddm_addToRunningAvg();
@@ -681,7 +685,7 @@ void ddm_resetRunningAvg(void){ DDM_avgCount = 0; _ddm_zero( DDM_avg,  ddm.numBi
 //int  ddm_checkNAN(void)       { for(int i = 0; i<ddm.numBins; i++) { if( isnan(DDM[i]) ) return 1; } return 0; }
 
 /****************************************************************************/
-//  Save DDM to binary file or .png image
+// Save DDM to the DDMfm structure
 /****************************************************************************/
 
 void ddm_save(struct metadata meta, struct DDMfm *ddm_fm, int realOrComplex){
@@ -695,8 +699,8 @@ void ddm_save(struct metadata meta, struct DDMfm *ddm_fm, int realOrComplex){
     complex double valc;
 
     int i = 0;
-    switch(realOrComplex){  //case=1
-        case 1: // real
+    switch(realOrComplex){  // case=1
+        case 1:  // real
             //for(int i = 0; i<ddm.numBins; i++) {
             //    val = creal(DDM[i]);
             //    fwrite(&val, 1, sizeof(double), outp);
