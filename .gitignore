@@ -10,3 +10,6 @@ CForwardModel_VAM
 *.sh~
 *.c~
 .gitignore~
+pathBook.txt
+gitpull.sh
+gitpush.sh
