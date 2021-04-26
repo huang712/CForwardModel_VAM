@@ -8,6 +8,14 @@
 #include "forwardmodel.h"
 #include "gnssr.h"
 
+void surface_effArea(){
+    // calculate effective scattering area
+    for (int idx = 0; idx < surface.numGridPts; idx++){
+        surface.data[idx].total = pow(surface.resolution_m,2);;
+        surface.data[idx].total_dP = 0;
+    }
+}
+
 double get_dmdx(double ws);
 
 double get_dmdx (double ws){

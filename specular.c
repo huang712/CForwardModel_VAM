@@ -126,7 +126,7 @@ int solveSpecularPtPosition(double rx_pos_ecef[3], double tx_pos_ecef[3],
             return(0);
 
         vector_subtract(S, Stemp, temp);
-        correction = r * fabs(vector_norm(temp)); // use fabs
+        correction = r * abs(vector_norm(temp)); // use fabs
 
         S[0] = Stemp[0];
         S[1] = Stemp[1];
@@ -210,9 +210,10 @@ int solveSpecularPt_sphericalEarth(double rx_pos_ecef[3], double tx_pos_ecef[3],
     double rs_unit[3], ts_unit[3];
     vector_subtract(rx_pos_ecef, sx_pos_ecef_unit, rs_unit); vector_unit(rs_unit, rs_unit);
     vector_subtract(tx_pos_ecef, sx_pos_ecef_unit, ts_unit); vector_unit(ts_unit, ts_unit);
-    double angleDiff_deg =  fabs( acos(vector_dot_product(rs_unit,sx_pos_ecef_unit))  // use fabs
+    double angleDiff_deg =  abs( acos(vector_dot_product(rs_unit,sx_pos_ecef_unit))  // use fabs
                                  - acos(vector_dot_product(ts_unit,sx_pos_ecef_unit)) ) * R2D;
-    if( angleDiff_deg > MIN_SPECULAR_ANGLE_TOL_DEG ){
+
+    if( angleDiff_deg > MIN_SPECULAR_ANGLE_TOL_DEG ){  // it sometimes failed the check
         printf("Error: Specular point failed angle check. (difference = %f deg)\n",angleDiff_deg);
         return(0);
     }

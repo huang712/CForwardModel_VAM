@@ -22,6 +22,9 @@ void init_metadata(struct CYGNSSL1 l1data, struct metadata *meta) {
     // Default numbers
     // by default, numDelaybins = 400, numDopplerbins = 400, resample_startBin[1] = 100
     // In fast mode, numDelaybins = 100, numDopplerbins = 200, resample_startBin[1] = 0
+
+    // First use high resolution to simulate the real, continuous waveform, and
+    // then resample it to simulate the receiver mechanism
     meta->numDelaybins = 100*fastMode_OnOff+400*(!fastMode_OnOff);    // 100  400
     meta->numDopplerbins = 200*fastMode_OnOff+400*(!fastMode_OnOff);;  // 200 400
     meta->delayRez_chips = 0.0510345;
@@ -156,6 +159,7 @@ void init_Geometry(struct CYGNSSL1 l1data, struct Geometry *geom){
     memcpy(geom->tx_position_ecef_m, l1data.tx_position_ecef_m, 3*sizeof(double));
     memcpy(geom->tx_velocity_ecef_ms, l1data.tx_velocity_ecef_ms, 3*sizeof(double));
     memcpy(geom->sp_position_ecef_m, l1data.sp_position_ecef_m, 3*sizeof(double));
+    memcpy(geom->sp_velocity_ecef_m, l1data.sp_velocity_ecef_m, 3*sizeof(double));
     memcpy(geom->sc_att_rad, l1data.sc_att_rad, 3*sizeof(double));
     geom->sp_lat = l1data.sp_lat;
     geom->sp_lon = l1data.sp_lon;
@@ -207,6 +211,8 @@ void init_Jacobian(struct Jacobian *jacob){
 char* getRxAntenna(int sc_num, int ddm_ant){
     // Use static to retrun string
     // Static variable can only be used in this function but the address/memory/value will be kept globally
+    // Static variable will remember its value when used next time, this could cause problem
+    // (maybe use global value instead)
 
     static char filename[100] = ANTENNA_PATH;
     char str1[2];

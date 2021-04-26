@@ -1,3 +1,13 @@
+# 2021-03-06
+- add free memory in forwardmodel.c
+- add surface_effArea()
+
+# 2021-03-05
+- Add sp_vel in L1 structure
+- Don't calculate sp_vel by myself in geom.c
+- fix bug in specular.c
+- Add eff_area
+
 # 2020-10-26
 - Clean the code using Google style
 - Minor changes to specular.c (use fabs in stead of abs)

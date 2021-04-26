@@ -33,6 +33,7 @@ struct CYGNSSL1
     double tx_position_ecef_m[3];
     double tx_velocity_ecef_ms[3];
     double sp_position_ecef_m[3];
+    double sp_velocity_ecef_m[3];
     double sp_lat, sp_lon;
     double sc_att_rad[3];
 

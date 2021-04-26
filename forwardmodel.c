@@ -40,6 +40,7 @@ void forwardModel(struct metadata meta, struct powerParm pp, struct inputWindFie
     // Calculate the DDM forward model
     ddm_binSurface();
     surface_composeTotalScatPowrOnSurface(1);  // 1 for no speckle and no mask; speckle not working now
+    //surface_effArea();
 
     ddm_mapSurfaceToDDM();
     ddm_convolveFFT(2);
@@ -48,6 +49,13 @@ void forwardModel(struct metadata meta, struct powerParm pp, struct inputWindFie
 
     ddm_save(meta,ddm_fm,1);  // resample DDM to 17x11 and save to structure ddm_fm
     if (opt.JacobOnOff == 1) {ddm_Hmatrix(meta, iwf, jacob);}  // compute and save to structure jacob
+
+    // free memory
+    free(wf.data);
+    free(antenna.data);
+    free(orbitGeometry.g);
+    surface_cleanup(); // free surface.data
+    ddm_cleanup(); // free DDM, H, ...
 
 //    surface_saveWindToFile();
 //    surface_saveDopplerToFile();

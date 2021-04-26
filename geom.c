@@ -43,11 +43,14 @@ void geom_initialize(geometryData *gd, struct Geometry geom){
         gd->g[i].sx_pos_ecef[1] = geom.sp_position_ecef_m[1];
         gd->g[i].sx_pos_ecef[2] = geom.sp_position_ecef_m[2];
 
+        gd->g[i].sx_vel_ecef[0] = geom.sp_velocity_ecef_m[0];
+        gd->g[i].sx_vel_ecef[1] = geom.sp_velocity_ecef_m[1];
+        gd->g[i].sx_vel_ecef[2] = geom.sp_velocity_ecef_m[2];
+
         gd->g[i].sc_att_rad[0] = geom.sc_att_rad[0];
         gd->g[i].sc_att_rad[1] = geom.sc_att_rad[1];
         gd->g[i].sc_att_rad[2] = geom.sc_att_rad[2];
 
-        // Solve specular point
         // Convert ECEF to specular frame
         // Compute sx_pos, RX, TX, Dopper, Delay
         geom_calculateSecondaryGeometry(&(gd->g[i]));
@@ -77,15 +80,17 @@ void geom_calculateSecondaryGeometry( orbitGeometryStruct *g ){
     wgsxyz2lla( g->sx_pos_ecef, g->sx_pos_llh );
 
     // Propagate satellites forward in time to solve for specular point velocity
-    double tempRx[3],tempTx[3],tempSx[3],tempSxLLH[3];
+    double tempRx[3],tempTx[3],tempSx[3],tempSxLLH[3]; // position at next time
     double timeInc_s = 1;
     for(int i=0;i<3;i++){ //Tx and Rx pos at next time
         tempRx[i] = g->rx_pos_ecef[i] + g->rx_vel_ecef[i] * timeInc_s;
         tempTx[i] = g->tx_pos_ecef[i] + g->tx_vel_ecef[i] * timeInc_s;
+        tempSx[i] = g->sx_pos_ecef[i] + g->sx_vel_ecef[i] * timeInc_s;
     }
-    solveSpecularPtPosition(tempRx, tempTx, tempSx, 0, 100);
+    //solveSpecularPtPosition(tempRx, tempTx, tempSx, 0, 100); // it may not be very accurate; sometimes fail angle check
+
     wgsxyz2lla( tempSx, tempSxLLH );
-    for(int i=0;i<3;i++) g->sx_vel_ecef[i] = (tempSx[i]    - g->sx_pos_ecef[i]) / timeInc_s;
+    //for(int i=0;i<3;i++) g->sx_vel_ecef[i] = (tempSx[i]    - g->sx_pos_ecef[i]) / timeInc_s;
     for(int i=0;i<3;i++) g->sx_vel_llh[i]  = (tempSxLLH[i] - g->sx_pos_llh[i] ) / timeInc_s;
 
     // Convert ECEF to specular frame

@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
     printf("H = %e\n",jacob.data[12247].value);
 
     // Save simulated DDM and Jacobian -------------------------------------------------------------------------------------------------
-    //DDMobs_saveToFile(l1data, sampleIndex,pathType, saveDir);
+    DDMobs_saveToFile(l1data, sampleIndex,pathType, saveDir);
     DDMfm_saveToFile(ddm_fm, sampleIndex, pathType, saveDir);
     if (opt.JacobOnOff == 1) {
         Jacobian_saveToFile(jacob, sampleIndex, pathType, saveDir);

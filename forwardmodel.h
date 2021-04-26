@@ -20,7 +20,7 @@
 #define PRN_ACF_FILE "/users/fax/CYGNSS/Data/PRN_ACF.bin"
 #define GMF_PATH "/users/fax/CYGNSS/Data/GMF_data/"
 
-#define GMF_OnOff 1  // use modified CYGNSS GMF model unless Katzberg model
+#define GMF_OnOff 0  // use modified CYGNSS GMF model unless Katzberg model
 #define fastMode_OnOff 1  // 1 for fast mode (in initialization.c)
 
 struct option
@@ -110,6 +110,7 @@ struct Geometry
     double tx_position_ecef_m[3];
     double tx_velocity_ecef_ms[3];
     double sp_position_ecef_m[3];
+    double sp_velocity_ecef_m[3];
     double sc_att_rad[3];
     double sp_lat, sp_lon;
 };

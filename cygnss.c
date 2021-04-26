@@ -55,6 +55,10 @@ void readL1data(char L1dataFilename[], int sampleIndex, int ddm_index, struct CY
     l1data->sp_position_ecef_m[0] = readnc_int_2d(ncid, "sp_pos_x", sampleIndex, ddm_index);
     l1data->sp_position_ecef_m[1] = readnc_int_2d(ncid, "sp_pos_y", sampleIndex, ddm_index);
     l1data->sp_position_ecef_m[2] = readnc_int_2d(ncid, "sp_pos_z", sampleIndex, ddm_index);
+    l1data->sp_velocity_ecef_m[0] = readnc_int_2d(ncid, "sp_vel_x", sampleIndex, ddm_index);
+    l1data->sp_velocity_ecef_m[1] = readnc_int_2d(ncid, "sp_vel_y", sampleIndex, ddm_index);
+    l1data->sp_velocity_ecef_m[2] = readnc_int_2d(ncid, "sp_vel_z", sampleIndex, ddm_index);
+
     l1data->sp_lat = readnc_float_2d(ncid, "sp_lat", sampleIndex, ddm_index);
     l1data->sp_lon = readnc_float_2d(ncid, "sp_lon", sampleIndex, ddm_index);
     l1data->sc_att_rad[0] = readnc_float_1d(ncid, "sc_pitch", sampleIndex);
