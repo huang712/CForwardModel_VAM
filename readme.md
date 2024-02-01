@@ -1,5 +1,5 @@
 # CForwardModel_VAM
-This is the GNSS-R delay-Doppler map (DDM) forward model developed by Feixiong Huang from Purdue University. (contact email: huang712@purdue.edu)
+This is the GNSS-R delay-Doppler map (DDM) forward model developed by Feixiong Huang from Purdue University. (contact email: fxhunag55@foxmail.com)
 
 Reading a gridded wind field, a CYGNSS Level 1 product file and CYGNSS receiver antenna patterns, the forward model can produce a simulated DDM and a Jacobian matrix. For more information, please refer to the paper:
 
